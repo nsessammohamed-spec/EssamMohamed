@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /make-password.html
+
+Sitemap: https://nsessammohamed-spec.github.io/EssamMohamed/sitemap.xml
