@@ -8,7 +8,7 @@
 <title>لوحة التحكم</title>
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self'; connect-src 'self' https://*.workers.dev; frame-src 'self'; base-uri 'none'; form-action 'self'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
-<link rel="stylesheet" href="admin.css?v=20261118a">
+<link rel="stylesheet" href="admin.css?v=20261118c">
 </head>
 <body>
 
@@ -18,8 +18,8 @@
       <div class="lbrand"><span class="logo">ع</span><span>لوحة التحكم</span></div>
       <h1>أهلاً بيك 👋</h1>
       <p class="lsub">اكتب كلمة السر عشان تدخل لوحة التحكم.</p>
-      <label>كلمة السر
-        <span class="pw"><input id="pass" type="password" autocomplete="current-password" placeholder="اكتب كلمة السر" required><button type="button" class="ib" id="showTok" aria-label="إظهار كلمة السر"></button></span>
+      <label>
+        <span class="pw"><input id="pass" type="password" autocomplete="current-password" placeholder="اكتب كلمة السر" aria-label="كلمة السر" required><button type="button" class="ib" id="showTok" aria-label="إظهار كلمة السر"></button></span>
       </label>
       <p class="err" id="loginErr" role="alert" hidden></p>
       <button class="btn primary big" id="loginBtn" type="submit">دخول</button>
