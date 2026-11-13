@@ -52,9 +52,11 @@
     s.setProperty('--design-card-ratio',['4/3','1/1','3/4','16/9'].includes(z.cardRatio)?z.cardRatio:'4/3');
     s.setProperty('--design-button-radius',clamp(z.buttonRadius,0,999,999)+'px');
     s.setProperty('--design-shadow',clamp(z.shadow,0,1.5,1));
-    const fonts={Tajawal:'\"Tajawal\",sans-serif',Alexandria:'\"Alexandria\",sans-serif',Roboto:'\"Roboto\",sans-serif'};
-    s.setProperty('--f-body',fonts[z.bodyFont]||'\"Tajawal\",sans-serif');
-    s.setProperty('--f-head',fonts[z.headingFont]||'\"Alexandria\",sans-serif');
+    const fonts={Tajawal:'\"Tajawal\",sans-serif',Alexandria:'\"Alexandria\",sans-serif',Roboto:'\"Roboto\",sans-serif',
+      Plex:'\"Inter\",\"IBM Plex Sans Arabic\",\"Tajawal\",system-ui,sans-serif',
+      Kufi:'\"Playfair Display\",\"Noto Kufi Arabic\",\"Alexandria\",\"Tajawal\",system-ui,sans-serif'};
+    s.setProperty('--f-body',fonts[z.bodyFont]||fonts.Plex);
+    s.setProperty('--f-head',fonts[z.headingFont]||fonts.Kufi);
     s.setProperty('--design-heading-scale',clamp(z.headingScale,.8,1.4,1));
     const tc = d.querySelector('meta[name=theme-color]');
     if (tc) tc.content = m === 'light' ? '#FAF7F0' : '#0B0A08';
