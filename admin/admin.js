@@ -500,7 +500,7 @@
       '<div class="g2"><label>القسم المرتبط<select id="k_c"><option value="">عام (بدون قسم)</option>' + S.categories.map(c => '<option value="' + esc(c.id) + '"' + (c.id === k.category ? ' selected' : '') + '>' + esc(c.name) + '</option>').join('') + '</select></label><label>شارة صغيرة (اختياري)<input id="k_b" dir="auto" placeholder="مثلًا: الأكتر طلبًا" value="' + esc(k.badge) + '"></label></div>' +
       '<label>وصف قصير<textarea id="k_d" rows="2" dir="auto">' + esc(k.desc) + '</textarea></label>' +
       '<label>المميزات (ميزة في كل سطر)<textarea id="k_f" rows="6" dir="auto">' + esc((k.features || []).join('\n')) + '</textarea></label>' +
-      '<div class="g2"><label>السعر (فاضي = «السعر حسب المشروع»)<input id="k_p" dir="auto" placeholder="مثلًا: 500 جنيه" value="' + esc(k.price) + '"></label><label>ملحوظة جنب السعر (اختياري)<input id="k_o" dir="auto" value="' + esc(k.note) + '"></label></div>' +
+      '<div class="g2"><label>السعر بالجنيه المصري (فاضي = «السعر حسب المشروع»)<input id="k_p" dir="auto" placeholder="مثلًا: 500 جنيه" value="' + esc(k.price) + '"></label><label>ملحوظة جنب السعر (اختياري)<input id="k_o" dir="auto" value="' + esc(k.note) + '"></label></div>' +
       '<div style="height:12px"></div><label class="sw"><input type="checkbox" id="k_v"' + (k.visible !== false ? ' checked' : '') + '>ظاهرة في الموقع</label><label class="sw"><input type="checkbox" id="k_h"' + (k.featured ? ' checked' : '') + '>باقة مميّزة (بتتبرز)</label></div>' +
       '<div class="df"><button class="btn primary" type="submit">' + I('check') + ' حفظ</button><button class="btn ghost" type="button" id="cx">إلغاء</button></div></form>';
     d.onclose = null;
