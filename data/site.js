@@ -15,7 +15,7 @@ window.SITE={
   "photo": "images/me/portrait.webp",
   "available": true,
   "availableText": "متاح للعمل الحر والدوام الكامل",
-  "cta1Text": "شوف أعمالــــــــــــــــــــــــــــــــــــــــــــــــــــــــــــي",
+  "cta1Text": "شوف أعمالـي",
   "cta1Link": "#work",
   "cta2Text": "تواصل معايا",
   "cta2Link": "#contact",
