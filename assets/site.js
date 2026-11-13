@@ -13,6 +13,7 @@
   let D = null, cur = 'all', io = null;
   /* ألوان هادية متناسقة مع الدهبي: دهبي، أخضر مريمية، وردي طوبي، أزرق مخضر */
   const PAL = ['212,166,74', '140,170,110', '204,122,107', '111,163,160', '170,140,170'];
+  const rgbOf = (c, i) => { const m = /^#([0-9a-f]{6})$/i.exec((c && c.color) || ''); return m ? h2r(m[1]).join(',') : PAL[i % PAL.length]; };
   const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ---------- theme ---------- */
@@ -66,9 +67,9 @@
       '<span class="idx">' + String(i + 1).padStart(2, '0') + '</span>' +
       (c.type !== 'video' && all.length > 1 ? '<span class="cnt">' + ic('layers') + all.length + ' صور</span>' : '') +
       (c.type === 'video' ? '<div class="pl"><span>' + ic('play') + '</span></div>' : '') + '</div>';
-    const body = '<div class="cb">' + (p.tag ? '<span class="tg">' + E(p.tag) + '</span>' : '') + '<h3 dir="auto">' + E(p.title) + '</h3>' + (p.desc ? '<p>' + E(p.desc) + '</p>' : '') +
+    const body = '<div class="cb">' + (p.tag ? '<span class="tg">' + E(p.tag) + '</span>' : '') + '<h3 dir="auto">' + E(p.title) + '</h3>' + (p.desc ? '<p dir="auto">' + E(p.desc) + '</p>' : '') +
       '<span class="go">' + (c.type === 'video' ? 'شاهد العمل' : 'شوف العمل') + ' ' + ic('arrowL') + '</span></div>';
-    return '<a class="card' + (p.featured ? ' feat' : '') + '" style="--i:' + i + ';--c:' + PAL[Math.max(0, D.categories.findIndex(x => x.id === p.category)) % PAL.length] + '" href="works.html#w-' + encodeURIComponent(p.id) + '" aria-label="' + E(p.title) + '">' + media + body + '</a>';
+    return '<a class="card' + (p.featured ? ' feat' : '') + '" style="--i:' + i + ';--c:' + rgbOf(c, Math.max(0, D.categories.findIndex(x => x.id === p.category))) + '" href="works.html#w-' + encodeURIComponent(p.id) + '" aria-label="' + E(p.title) + '">' + media + body + '</a>';
   }
 
   function grid() {
@@ -92,7 +93,7 @@
       sections.push('<section class="s" id="services"><div class="wrap"><div class="sh ctr rv"><span class="no">' + num() + '</span><h2>بشتغل في إيه؟</h2><p>اختار المجال وشوف شغلي فيه.</p></div><div class="svc">' +
         D.categories.map((c, i) => {
           const n = P.filter(p => p.category === c.id).length;
-          return '<div class="svc-w rv" style="--d:' + (i * .08) + 's"><button type="button" style="--c:' + PAL[i % PAL.length] + '" data-cat="' + E(c.id) + '"><span class="ico">' + ic(c.icon) + '</span><h3>' + E(c.name) + '</h3><p>' + E(c.desc) + '</p><em>' + (n ? n + ' ' + (n > 2 && n < 11 ? 'أعمال' : 'عمل') + ' · شوفهم' : 'قريبًا') + ' ' + ic('arrowL') + '</em></button></div>';
+          return '<div class="svc-w rv" style="--d:' + (i * .08) + 's"><button type="button" style="--c:' + rgbOf(c, i) + '" data-cat="' + E(c.id) + '"><span class="ico">' + ic(c.icon) + '</span><h3>' + E(c.name) + '</h3><p>' + E(c.desc) + '</p><em>' + (n ? n + ' ' + (n > 2 && n < 11 ? 'أعمال' : 'عمل') + ' · شوفهم' : 'قريبًا') + ' ' + ic('arrowL') + '</em></button></div>';
         }).join('') + '</div></div></section>');
     }
 
@@ -111,7 +112,7 @@
       menu.push(['#about', 'عني']);
       const facts = (Array.isArray(A.facts) ? A.facts : []).filter(f => f && f.label && f.value);
       if (D.categories.length) facts.push({ label: 'التخصصات', value: D.categories.map(c => c.name).join('، ') });
-      sections.push('<section class="s" id="about"><div class="wrap"><div class="ab">' +
+      sections.push('<section class="s" id="about"><div class="wrap"><div class="ab' + (mine.length ? '' : ' solo') + '">' +
         '<div class="ab-tx"><div class="sh rv"><h2>' + E(A.title || 'نبذة عني') + '</h2></div>' +
         '<p class="tx rv">' + E(ar(A.text)) + '</p>' +
         (facts.length ? '<dl class="facts rv">' + facts.map(f => '<div><dt>' + E(f.label) + '</dt><dd>' + E(ar(f.value)) + '</dd></div>').join('') + '</dl>' : '') +
@@ -122,14 +123,17 @@
     }
 
     const wa = String(C.whatsapp || '').replace(/\D/g, '');
+    const CF = C.form || {}, showF = C.showForm !== false, whens = (Array.isArray(C.when) ? C.when : ['مستعجل', 'خلال أسبوع', 'مفيش استعجال']).map(x => String(x == null ? '' : x).trim()).filter(Boolean);
     if (C.email || wa || C.socials.length) {
       menu.push(['#contact', 'تواصل']);
       sections.push('<section class="s" id="contact"><div class="wrap"><div class="cx rv"><h2>' + E(C.title || 'تواصل معايا') + '</h2>' + (C.text ? '<p>' + E(ar(C.text)) + '</p>' : '') +
-        '<div class="ct"><form class="cf" id="cf" novalidate autocomplete="off">' +
-          '<label class="fl"><span>اسمك</span><input name="nm" type="text" maxlength="60" placeholder="اكتب اسمك"></label>' +
-          (D.categories.length ? '<div class="fl"><span>محتاج إيه؟</span><div class="svs">' + D.categories.map((c, i) => '<button type="button" class="sv" style="--c:' + PAL[i % PAL.length] + '" data-svc="' + E(c.name) + '" aria-pressed="false">' + ic(c.icon) + E(c.name) + '</button>').join('') + '</div></div>' : '') +
-          '<label class="fl"><span>تفاصيل شغلك</span><textarea name="ms" rows="4" maxlength="1200" placeholder="احكيلي عن الشغل: المطلوب، الميعاد، أي تفاصيل تفيد"></textarea></label>' +
-          '<div class="cf-b">' + (wa ? '<button type="button" class="btn primary" data-send="wa" data-to="' + wa + '">ابعت على واتساب ' + ic('arrowL') + '</button>' : '') + (C.email ? '<button type="button" class="btn ghost" data-send="mail" data-to="' + E(C.email) + '">ابعت بالإيميل</button>' : '') + '</div></form>' +
+        (C.steps && C.steps.length ? '<ol class="stp">' + C.steps.filter(x => x && x.t).map((x, i) => '<li style="--c:' + PAL[i % PAL.length] + '"><b>' + (i + 1) + '</b><div><h3>' + E(x.t) + '</h3>' + (x.d ? '<p>' + E(ar(x.d)) + '</p>' : '') + '</div></li>').join('') + '</ol>' : '') +
+          '<div class="ct' + (showF ? '' : ' nf') + '">' + (showF ? ('<form class="cf" id="cf" data-g="' + E(CF.greeting || ('أهلاً ' + splitName(H.name)[0])) + '" novalidate autocomplete="off">' +
+          '<label class="fl"><span>اسمك</span><input name="nm" dir="rtl" type="text" maxlength="60" placeholder="اكتب اسمك"></label>' +
+          (D.categories.length ? '<div class="fl"><span>محتاج إيه؟</span><div class="svs">' + D.categories.map((c, i) => '<button type="button" class="sv" style="--c:' + rgbOf(c, i) + '" data-svc="' + E(c.name) + '" aria-pressed="false">' + ic(c.icon) + E(c.name) + '</button>').join('') + '</div></div>' : '') +
+          (whens.length ? '<div class="fl"><span>الميعاد المطلوب</span><div class="svs">' + whens.map((w, i) => '<button type="button" class="sv" style="--c:' + PAL[(i + 1) % PAL.length] + '" data-when="' + E(w) + '" aria-pressed="false">' + E(w) + '</button>').join('') + '</div></div>' : '') +
+          '<label class="fl"><span>تفاصيل شغلك</span><textarea name="ms" dir="rtl" rows="4" maxlength="1200" placeholder="' + E(CF.msgPlaceholder || 'احكيلي عن الشغل: المطلوب، الميعاد، أي تفاصيل تفيد') + '"></textarea></label>' +
+          '<div class="pv"><span>الرسالة اللي هتتبعت</span><p id="pv" class="empty" dir="auto">رسالتك هتظهر هنا وانت بتكتب.</p></div><div class="cf-b">' + (wa ? '<button type="button" class="btn primary" data-send="wa" data-to="' + wa + '">' + E(CF.waBtn || 'ابعت على واتساب') + ' ' + ic('arrowL') + '</button>' : '') + (C.email ? '<button type="button" class="btn ghost" data-send="mail" data-to="' + E(C.email) + '">' + E(CF.mailBtn || 'ابعت بالإيميل') + '</button>' : '') + '</div></form>') : '') +
           '<div class="ct-s">' +
           (H.available && H.availableText ? '<div class="cc av"><span class="pulse"></span><div><b>متاح دلوقتي</b><span>' + E(H.availableText) + '</span></div></div>' : '') +
           (wa ? '<a class="cc" style="--c:140,170,110" href="https://wa.me/' + wa + '" target="_blank" rel="noopener noreferrer"><div><b>واتساب</b><span class="ltr">+' + wa + '</span></div>' + ic('ext') + '</a>' : '') +
@@ -147,7 +151,7 @@
     const photo = img(H.photo), ps = ['card', 'arch', 'round'].indexOf(H.photoStyle) > -1 ? H.photoStyle : 'card';
     /* الاسم في سطر واحد، وتحته خط بالقلم بيترسم (روح السبورة البيضاء) */
     const l1 = String(H.name || '').trim(), l2 = '';
-    const pen = '<svg class="pen" viewBox="0 0 400 30" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M3 17C52 8 96 22 150 14S262 8 330 15 384 13 397 11"/><path pathLength="1" d="M58 26C128 20 214 27 302 21"/></svg>';
+    const pen = '<svg class="pen" viewBox="0 0 400 30" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M3 15H397"/></svg>';
     const nameHtml = l2 ? '<span class="nl">' + E(l1) + '</span><span class="nl">' + E(l2) + pen + '</span>' : '<span class="nl">' + E(l1) + pen + '</span>';
     const eyebrow = E(H.eyebrow).replace(/\s*[·•|]\s*/g, '، ');
     const fx = [[P.length, 'أعمال'], [D.categories.length, 'مجالات'], [skills.length, 'أدوات']].filter(x => x[0] > 0);
@@ -162,7 +166,7 @@
       (H.available && H.availableText ? '<p class="avail rv" style="--d:.3s"><span class="pulse"></span>' + E(H.availableText) + '</p>' : '') +
       '</div><figure class="hero-ph rv" data-ps="' + ps + '" style="--d:.2s"><div class="arch"' + (photo ? ' data-lb="' + E(photo) + '" title="تكبير الصورة"' : '') + '>' +
       (photo ? '<img src="' + E(photo) + '" alt="' + E(H.name) + '" fetchpriority="high" decoding="async">' : '<div class="mono" aria-hidden="true">' + E((H.name || 'ع').trim().charAt(0)) + '</div>') +
-      '</div>' + (photo ? D.categories.slice(0, 4).map((c, i) => '<span class="fb fb' + i + '" style="--c:' + PAL[i % PAL.length] + '" aria-hidden="true">' + ic(c.icon) + E(c.name) + '</span>').join('') : '') + '</figure>' + facts + '</div></section>';
+      '</div>' + (photo && H.badges !== false ? D.categories.slice(0, 4).map((c, i) => '<span class="fb fb' + i + '" style="--c:' + rgbOf(c, i) + '" aria-hidden="true">' + ic(c.icon) + E(c.name) + '</span>').join('') : '') + '</figure>' + facts + '</div></section>';
 
     let base = []; while (skills.length && base.length < 8) base = base.concat(skills);
     const mk = k => base.map(s => '<span' + (k ? ' class="dup"' : '') + '>' + E(s) + '</span><i' + (k ? ' class="dup"' : '') + '></i>').join('');
@@ -255,16 +259,36 @@
   });
 
   d.addEventListener('submit', e => e.preventDefault());
+  d.addEventListener('input', e => { const t = e.target; if (!t.closest || !t.closest('.cf')) return; const m = t.value.match(/[A-Za-z\u0590-\u08FF]/); t.dir = m && /[A-Za-z]/.test(m[0]) ? 'ltr' : 'rtl'; });
+  function compose() {
+    const f = d.getElementById('cf'); if (!f) return '';
+    const nm = f.elements.nm.value.trim(), ms = f.elements.ms.value.trim();
+    const sv = d.querySelector('[data-svc][aria-pressed=true]'), wn = d.querySelector('[data-when][aria-pressed=true]');
+    const L = [(f.dataset.g || 'أهلاً') + (nm ? '، أنا ' + nm : '') + '.'];
+    if (sv) L.push('محتاج: ' + sv.dataset.svc);
+    if (wn) L.push('الميعاد: ' + wn.dataset.when);
+    if (ms) L.push('', ms);
+    return L.join('\n');
+  }
+  function pv() {
+    const o = d.getElementById('pv'), f = d.getElementById('cf'); if (!o || !f) return;
+    const has = f.elements.ms.value.trim() || f.elements.nm.value.trim() || d.querySelector('[data-svc][aria-pressed=true],[data-when][aria-pressed=true]');
+    o.textContent = has ? compose() : 'رسالتك هتظهر هنا وانت بتكتب.'; o.classList.toggle('empty', !has);
+  }
+  d.addEventListener('input', e => { if (e.target.closest && e.target.closest('.cf')) pv(); });
   d.addEventListener('click', e => {
-    const sv = e.target.closest && e.target.closest('[data-svc]');
-    if (sv) { const on = sv.getAttribute('aria-pressed') === 'true'; d.querySelectorAll('[data-svc]').forEach(b => b.setAttribute('aria-pressed', 'false')); sv.setAttribute('aria-pressed', String(!on)); return; }
+    const g = e.target.closest && e.target.closest('[data-svc],[data-when]');
+    if (g) {
+      const k = g.hasAttribute('data-svc') ? 'data-svc' : 'data-when', on = g.getAttribute('aria-pressed') === 'true';
+      d.querySelectorAll('[' + k + ']').forEach(b => b.setAttribute('aria-pressed', 'false')); g.setAttribute('aria-pressed', String(!on)); pv(); return;
+    }
     const sd = e.target.closest && e.target.closest('[data-send]'); if (!sd) return;
     const f = d.getElementById('cf'); if (!f) return;
-    const nm = f.elements.nm.value.trim(), ms = f.elements.ms.value.trim(), sel = d.querySelector('[data-svc][aria-pressed=true]');
-    if (!ms) { f.classList.remove('shake'); void f.offsetWidth; f.classList.add('shake'); f.elements.ms.focus(); toast('اكتب تفاصيل شغلك الأول'); return; }
-    const txt = 'أهلاً عصام' + (nm ? '، أنا ' + nm : '') + (sel ? '.\nمحتاج: ' + sel.dataset.svc : '') + '.\n\n' + ms;
+    if (!f.elements.ms.value.trim()) { f.classList.remove('shake'); void f.offsetWidth; f.classList.add('shake'); f.elements.ms.focus(); toast('اكتب تفاصيل شغلك الأول'); return; }
+    const txt = compose(), sv = d.querySelector('[data-svc][aria-pressed=true]');
     if (sd.dataset.send === 'wa') window.open('https://wa.me/' + sd.dataset.to + '?text=' + encodeURIComponent(txt), '_blank', 'noopener');
-    else location.href = 'mailto:' + sd.dataset.to + '?subject=' + encodeURIComponent('طلب شغل' + (sel ? ' - ' + sel.dataset.svc : '')) + '&body=' + encodeURIComponent(txt);
+    else location.href = 'mailto:' + sd.dataset.to + '?subject=' + encodeURIComponent('طلب شغل' + (sv ? ' - ' + sv.dataset.svc : '')) + '&body=' + encodeURIComponent(txt);
+    toast('اتجهّزت الرسالة ✓');
   });
 
   function setFilter(id) {

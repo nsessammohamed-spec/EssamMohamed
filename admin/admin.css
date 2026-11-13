@@ -168,3 +168,7 @@ dialog::backdrop{background:rgba(0,0,0,.7);backdrop-filter:blur(4px)}
 .gb .ib{width:32px;height:32px}
 .ga{display:flex;flex-direction:column;gap:10px;align-items:flex-start;margin-top:14px}
 .ga textarea{width:100%;font-size:14px;padding:8px 12px}
+
+.clrrow{display:flex;align-items:center;gap:12px;grid-column:1/-1}
+.clrrow span{color:var(--muted);font-size:14px}
+.clrrow input[type=color]{width:48px;height:38px;padding:2px;border-radius:10px;cursor:pointer;flex:none}

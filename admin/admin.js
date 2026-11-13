@@ -60,7 +60,7 @@
   function norm(d) {
     d = d || {};
     d.meta = d.meta || {}; d.theme = Object.assign({ accent: '#C9A24B', mode: 'dark', toggle: true }, d.theme);
-    d.hero = d.hero || {}; d.about = d.about || {}; d.about.photos = Array.isArray(d.about.photos) ? d.about.photos : []; d.contact = d.contact || {}; d.contact.socials = d.contact.socials || [];
+    d.hero = d.hero || {}; d.about = d.about || {}; d.about.photos = Array.isArray(d.about.photos) ? d.about.photos : []; d.contact = d.contact || {}; d.contact.socials = d.contact.socials || []; d.contact.steps = Array.isArray(d.contact.steps) ? d.contact.steps : []; d.contact.when = Array.isArray(d.contact.when) ? d.contact.when : ['مستعجل', 'خلال أسبوع', 'مفيش استعجال']; d.contact.form = d.contact.form || {};
     ['stats', 'skills', 'categories', 'projects'].forEach(k => { if (!Array.isArray(d[k])) d[k] = []; });
     return d;
   }
@@ -304,13 +304,15 @@
     d.showModal(); $('#w_t').focus();
   }
 
+  const CPAL = ['#D4A64A', '#8CAA6E', '#CC7A6B', '#6FA3A0', '#AA8CAA'];
+  const colorVal = (c, i) => /^#[0-9a-f]{6}$/i.test(c.color || '') ? c.color : CPAL[i % CPAL.length];
   function vCats() {
     return '<p style="color:var(--muted);margin-top:0">الأقسام هي اللي بتظهر في «بشتغل في إيه؟» وفلاتر الأعمال. نوع «فيديو» بيضيف زرار تشغيل على الكروت.</p>' +
       '<div id="clist">' + S.categories.map((c, i) => '<div class="crow" data-i="' + i + '"><span class="grip">' + I('grip') + '</span><div class="fields">' +
         '<label>اسم القسم<input data-b="categories.' + i + '.name" value="' + esc(c.name) + '"></label>' +
         '<label>الأيقونة<select data-b="categories.' + i + '.icon">' + ICON_CHOICES.map(n => '<option' + (n === c.icon ? ' selected' : '') + '>' + n + '</option>').join('') + '</select></label>' +
         '<label>النوع<select data-b="categories.' + i + '.type"><option value="image"' + (c.type !== 'video' ? ' selected' : '') + '>صور / مشاريع</option><option value="video"' + (c.type === 'video' ? ' selected' : '') + '>فيديو</option></select></label>' +
-        '<label class="w">وصف القسم<input data-b="categories.' + i + '.desc" value="' + esc(c.desc) + '"></label></div>' +
+        '<label class="w">وصف القسم<input data-b="categories.' + i + '.desc" value="' + esc(c.desc) + '"></label><div class="clrrow w"><span>لون الصندوق</span><input type="color" data-b="categories.' + i + '.color" value="' + colorVal(c, i) + '" aria-label="لون الصندوق"><button class="btn sm ghost" type="button" data-act="ccol" data-i="' + i + '">لون تلقائي</button></div></div>' +
         '<div class="acts"><button class="ib" data-act="cup" data-i="' + i + '" ' + (i === 0 ? 'disabled' : '') + ' aria-label="فوق">' + I('up') + '</button><button class="ib" data-act="cdown" data-i="' + i + '" ' + (i === S.categories.length - 1 ? 'disabled' : '') + ' aria-label="تحت">' + I('down') + '</button><button class="ib bad" data-act="cdel" data-i="' + i + '" aria-label="حذف">' + I('trash') + '</button></div></div>').join('') + '</div>' +
       '<button class="btn primary" data-act="cadd">' + I('plus') + ' قسم جديد</button>';
   }
@@ -323,8 +325,8 @@
     return '<div class="panel"><h2>الواجهة الرئيسية</h2><p class="sub">أول حاجة الزائر بيشوفها.</p>' +
       '<label>السطر الصغير فوق الاسم<input data-b="hero.eyebrow" value="' + esc(h.eyebrow) + '"></label><label>الاسم<input data-b="hero.name" value="' + esc(h.name) + '"></label><label>الجملة التعريفية<textarea rows="2" data-b="hero.sub">' + esc(h.sub) + '</textarea></label>' +
       imageField('hp', 'الصورة الشخصية (الرئيسية)', h.photo, true) + '<small class="h">الأفضل صورة رأسية (4:5) بخلفية واضحة أو غامقة.</small><div style="height:16px"></div>' +
-      '<label>شكل إطار الصورة<select data-b="hero.photoStyle">' + [['card', 'كارت بإطار ذهبي (الافتراضي)'], ['arch', 'قوس'], ['round', 'دائرة']].map(o => '<option value="' + o[0] + '"' + ((h.photoStyle || 'card') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select></label><div style="height:8px"></div>' +
-      '<label class="sw"><input type="checkbox" data-b="hero.available"' + (h.available ? ' checked' : '') + '>أظهر شارة «متاح للعمل»</label><label>نص الشارة<input data-b="hero.availableText" value="' + esc(h.availableText) + '"></label>' +
+      '<label>شكل إطار الصورة<select data-b="hero.photoStyle">' + [['card', 'كارت بيندمج مع الخلفية (الافتراضي)'], ['arch', 'قوس'], ['round', 'دائرة']].map(o => '<option value="' + o[0] + '"' + ((h.photoStyle || 'card') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select></label><div style="height:8px"></div>' +
+      '<label class="sw"><input type="checkbox" data-b="hero.available"' + (h.available ? ' checked' : '') + '>أظهر شارة «متاح للعمل»</label><label>نص الشارة<input data-b="hero.availableText" value="' + esc(h.availableText) + '"></label><label class="sw"><input type="checkbox" data-b="hero.badges"' + (h.badges !== false ? ' checked' : '') + '>أظهر بادجات المجالات حوالين الصورة</label>' +
       '<div class="g2"><label>نص الزر الأول<input data-b="hero.cta1Text" value="' + esc(h.cta1Text) + '"></label><label>رابط الزر الأول<input dir="ltr" list="anch" data-b="hero.cta1Link" value="' + esc(h.cta1Link) + '"></label><label>نص الزر التاني<input data-b="hero.cta2Text" value="' + esc(h.cta2Text) + '"></label><label>رابط الزر التاني<input dir="ltr" list="anch" data-b="hero.cta2Link" value="' + esc(h.cta2Link) + '"></label></div>' +
       '<datalist id="anch"><option value="#work"><option value="#services"><option value="#about"><option value="#contact"></datalist></div>' +
       '<div class="panel"><h2>نبذة عني</h2><p class="sub">&nbsp;</p><label>العنوان<input data-b="about.title" value="' + esc(a.title) + '"></label><label>النص<textarea rows="5" data-b="about.text">' + esc(a.text) + '</textarea></label>' +
@@ -337,6 +339,11 @@
     const c = S.contact;
     return '<div class="panel"><h2>بيانات التواصل</h2><p class="sub">&nbsp;</p><label>عنوان القسم<input data-b="contact.title" value="' + esc(c.title) + '"></label><label>نص ترحيبي<textarea rows="2" data-b="contact.text">' + esc(c.text) + '</textarea></label>' +
       '<div class="g2"><label>الإيميل<input dir="ltr" data-b="contact.email" value="' + esc(c.email) + '"></label><label>واتساب (بكود الدولة بدون + وبدون صفر)<input dir="ltr" data-b="contact.whatsapp" value="' + esc(c.whatsapp) + '"></label></div></div>' +
+      '<div class="panel"><h2>نموذج التواصل</h2><p class="sub">النموذج اللي الزائر بيكتب فيه ويتحوّل لرسالة واتساب أو إيميل.</p>' +
+      '<label class="sw"><input type="checkbox" data-b="contact.showForm"' + (c.showForm !== false ? ' checked' : '') + '>أظهر نموذج التواصل</label>' +
+      '<div class="g2"><label>تحية بداية الرسالة<input data-b="contact.form.greeting" placeholder="أهلاً عصام" value="' + esc(c.form.greeting) + '"></label><label>نص زر واتساب<input data-b="contact.form.waBtn" placeholder="ابعت على واتساب" value="' + esc(c.form.waBtn) + '"></label><label>نص زر الإيميل<input data-b="contact.form.mailBtn" placeholder="ابعت بالإيميل" value="' + esc(c.form.mailBtn) + '"></label><label>نص إرشادي لخانة التفاصيل<input data-b="contact.form.msgPlaceholder" placeholder="احكيلي عن الشغل…" value="' + esc(c.form.msgPlaceholder) + '"></label></div></div>' +
+      '<div class="panel"><h2>اختيارات الميعاد</h2><p class="sub">الأزرار اللي الزائر بيختار منها ميعاد الشغل. لو فاضية، الصف بيختفي.</p>' + simpleList('contact.when', c.when, [['', 'مثال: مستعجل']]) + '<button class="btn sm" data-act="ladd" data-p="contact.when">' + I('plus') + ' إضافة اختيار</button></div>' +
+      '<div class="panel"><h2>خطوات الشغل</h2><p class="sub">بتظهر فوق نموذج التواصل. لو فاضية، القسم بيختفي.</p>' + simpleList('contact.steps', c.steps, [['t', 'عنوان الخطوة', 'n'], ['d', 'وصف قصير']]) + '<button class="btn sm" data-act="ladd" data-p="contact.steps">' + I('plus') + ' إضافة خطوة</button></div>' +
       '<div class="panel"><h2>حسابات السوشيال</h2><p class="sub">اسحب لإعادة الترتيب.</p>' + simpleList('contact.socials', c.socials, [['name', 'الاسم', 'n'], ['url', 'https://…', 'ltr']]) + '<button class="btn sm" data-act="ladd" data-p="contact.socials">' + I('plus') + ' إضافة حساب</button></div>';
   }
   const PRESETS = ['#C9A24B', '#E0B84F', '#D97706', '#E11D48', '#8B5CF6', '#3B82F6', '#10B981', '#14B8A6'];
@@ -360,7 +367,7 @@
     const el = $('#view'); el.innerHTML = RENDER[v](); window.scrollTo(0, 0);
     if (v === 'works') sortable($('#plist'), () => S.projects, () => { touch(); $('#plist').innerHTML = listWorks(); });
     if (v === 'cats') sortable($('#clist'), () => S.categories, () => { touch(); go('cats'); });
-    ['skills', 'stats', 'contact.socials'].forEach(p => { const c = $('#l_' + p); if (c) sortable(c, () => get(S, p), () => { touch(); go(view); }); });
+    ['skills', 'stats', 'contact.socials', 'contact.steps', 'contact.when'].forEach(p => { const c = $('#l_' + p); if (c) sortable(c, () => get(S, p), () => { touch(); go(view); }); });
     const hp = $('#hp'); if (hp) bindImageField(hp, 1200, v => { S.hero.photo = v; touch(); });
     const mg = $('#ap'); if (mg) bindGallery(mg, S.about.photos.slice(), 1200, v => { S.about.photos = v; touch(); });
     const ap = $('#accPick'); if (ap) ap.oninput = () => { S.theme.accent = ap.value; touch(); $$('.sw-c').forEach(x => x.classList.remove('on')); };
@@ -399,7 +406,8 @@
       const c = S.categories[i], n = S.projects.filter(p => p.category === c.id).length;
       if (await ask(n ? 'هتمسح قسم «' + c.name + '» و' + n + ' عمل جواه. متأكد؟' : 'تمسح قسم «' + c.name + '»؟', 'مسح')) { S.projects = S.projects.filter(p => p.category !== c.id); S.categories.splice(i, 1); touch(); go('cats'); }
     }
-    else if (a === 'ladd') { const arr = get(S, b.dataset.p); arr.push(b.dataset.p === 'skills' ? '' : b.dataset.p === 'stats' ? { value: '', label: '' } : { name: '', url: '' }); touch(); go(view); const rows = $$('#l_' + b.dataset.p + ' .mini'); if (rows.length) rows[rows.length - 1].querySelector('input').focus(); }
+    else if (a === 'ladd') { const arr = get(S, b.dataset.p); arr.push(b.dataset.p === 'skills' || b.dataset.p === 'contact.when' ? '' : b.dataset.p === 'stats' ? { value: '', label: '' } : b.dataset.p === 'contact.steps' ? { t: '', d: '' } : { name: '', url: '' }); touch(); go(view); const rows = $$('#l_' + b.dataset.p + ' .mini'); if (rows.length) rows[rows.length - 1].querySelector('input').focus(); }
+    else if (a === 'ccol') { delete S.categories[+b.dataset.i].color; touch(); go(view); }
     else if (a === 'ldel') { get(S, b.dataset.p).splice(i, 1); touch(); go(view); }
     else if (a === 'acc') { S.theme.accent = b.dataset.c; touch(); go('look'); }
     else if (a === 'export') { const l = document.createElement('a'); l.href = URL.createObjectURL(new Blob(['window.SITE=' + JSON.stringify(S, null, 1) + ';\n'], { type: 'text/javascript' })); l.download = 'site-backup-' + new Date().toISOString().slice(0, 10) + '.js'; l.click(); }
