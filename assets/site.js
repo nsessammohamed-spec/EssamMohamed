@@ -229,7 +229,8 @@
     const hf = (Array.isArray(H.facts) ? H.facts : []).filter(x => x && x.value && x.label).map(x => [x.value, x.label]);
     const fx = hf.length ? hf : [[P.length, T('factWorks')], [D.categories.length, T('factCats')], [skills.length, T('factTools')]].filter(x => x[0] > 0);
     const facts = fx.length ? '<div class="hero-facts rv" style="--d:.34s">' + fx.map(x => /^\d+$/.test(String(x[0])) ? '<div><b data-n="' + x[0] + '">0</b><span>' + E(x[1]) + '</span></div>' : '<div><b>' + E(x[0]) + '</b><span>' + E(x[1]) + '</span></div>').join('') + '</div>' : '';
-    const hero = '<section class="hero" id="top"><span class="hero-glow" aria-hidden="true"></span><div class="wrap hero-in"><div class="hero-tx">' +
+    const RINGS = '<svg viewBox="0 0 800 800" fill="none" stroke="currentColor" stroke-linecap="round" focusable="false"><circle cx="400" cy="400" r="110" opacity=".5"/><circle cx="400" cy="400" r="190" opacity=".34"/><circle class="dash" cx="400" cy="400" r="250" stroke-width="2.4" stroke-dasharray="1 11" opacity=".6"/><circle cx="400" cy="400" r="310" opacity=".22"/><circle cx="400" cy="400" r="380" opacity=".14"/><circle cx="522" cy="255" r="5" fill="currentColor" stroke="none" opacity=".85"/><circle cx="132" cy="555" r="3.5" fill="currentColor" stroke="none" opacity=".7"/><circle cx="757" cy="530" r="9" opacity=".6"/><circle cx="318" cy="293" r="3" fill="currentColor" stroke="none" opacity=".6"/></svg>';
+    const hero = '<section class="hero" id="top"><span class="hero-glow" aria-hidden="true"></span><div class="wrap hero-in"><span class="hero-rings" aria-hidden="true">' + RINGS + '</span><div class="hero-tx">' +
       (H.eyebrow ? '<p class="eyebrow rv">' + eyebrow + '</p>' : '') +
       '<h1 class="name rv" style="--d:.08s" aria-label="' + E(H.name) + '">' + nameHtml + '</h1>' +
       (H.sub ? '<p class="sub rv" style="--d:.16s">' + E(ar(H.sub)) + '</p>' : '') +

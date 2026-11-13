@@ -641,3 +641,46 @@ html.theming,html.theming *,html.theming *::before,html.theming *::after{transit
 .sh.ctr{position:relative;isolation:isolate}
 .sh.ctr::before{content:"";position:absolute;z-index:-1;pointer-events:none;left:50%;width:100vw;transform:translateX(-50%);top:-38px;bottom:-28px;background:var(--hs)}
 @media(max-width:860px){.sh.ctr::before{top:-26px;bottom:-16px}}
+
+/* =====================================================================
+   v6: خلفيات جرافيك — دواير خفيفة (مدارات) في الهيرو + دواير ونقط هادية ورا الأقسام
+   ===================================================================== */
+:root{--ring:rgba(var(--accent-rgb),.17);--dot:rgba(var(--accent-rgb),.30)}
+:root[data-mode=light]{--ring:rgba(var(--accent-rgb),.34);--dot:rgba(var(--accent-rgb),.46)}
+
+/* الهيرو: مدارات حوالين الصورة، والنقط الصغيرة بتدور ببطء جدًا */
+.hero-rings{position:absolute;z-index:0;pointer-events:none;color:var(--accent);width:min(1000px,125vw);aspect-ratio:1;left:19%;top:50%;
+  translate:calc(-50% + var(--nx,0) * 12px) calc(-50% + var(--ny,0) * 8px);transition:translate .6s ease-out}
+.hero-rings svg{display:block;width:100%;height:100%;overflow:visible}
+.hero-rings circle{vector-effect:non-scaling-stroke;stroke-width:1.2}
+.hero-rings .dash{stroke-width:2.4;transform-box:fill-box;transform-origin:50% 50%;animation:orbit 220s linear infinite}
+@keyframes orbit{to{transform:rotate(360deg)}}
+:root[data-mode=light] .hero-rings{opacity:.8}
+@media(max-width:860px){.hero-rings{left:50%;top:74%;width:170vw}}
+
+/* الأقسام: دواير متتالية بتتلاشى ناحية الحافة، ورقعة نقط، بالتبادل يمين وشمال */
+section.s{isolation:isolate;overflow-x:clip}
+#services::before,#pricing::before,#about::before,#faq::before{content:"";position:absolute;z-index:-1;pointer-events:none;width:min(640px,90vw);aspect-ratio:1;border-radius:50%;top:4%;
+  background:repeating-radial-gradient(circle closest-side,transparent 0 54px,var(--ring) 54px 55px);
+  -webkit-mask-image:radial-gradient(closest-side,#000 22%,transparent 98%);mask-image:radial-gradient(closest-side,#000 22%,transparent 98%)}
+#services::before,#about::before{left:-300px}
+#pricing::before,#faq::before{right:-300px}
+#work::before,#proof::before{content:"";position:absolute;z-index:-1;pointer-events:none;width:360px;height:260px;top:48px;
+  background:radial-gradient(circle,var(--dot) 1.3px,transparent 1.9px) 0 0/22px 22px;
+  -webkit-mask-image:radial-gradient(closest-side,#000 30%,transparent 100%);mask-image:radial-gradient(closest-side,#000 30%,transparent 100%)}
+#work::before{right:4%}
+#proof::before{left:4%}
+@media(max-width:860px){
+  #services::before,#pricing::before,#about::before,#faq::before{width:440px}
+  #services::before,#about::before{left:-240px}#pricing::before,#faq::before{right:-240px}
+  #work::before,#proof::before{width:240px;height:170px;top:30px}
+}
+@media(prefers-reduced-motion:reduce){.hero-rings .dash{animation:none}.hero-rings{transition:none}}
+
+/* الوضع الداكن: حواف الصورة بتتلاشى عشان المدارات تظهر وراها من غير حدود مستطيلة */
+:root:not([data-mode=light]) .hero-ph[data-ps=card] .arch img{
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 18%,#000 82%,transparent),linear-gradient(180deg,transparent,#000 14%);
+  -webkit-mask-composite:source-in;
+  mask-image:linear-gradient(90deg,transparent,#000 18%,#000 82%,transparent),linear-gradient(180deg,transparent,#000 14%);
+  mask-composite:intersect}
+:root[data-mode=light] .hero::after{display:block;height:100px}
