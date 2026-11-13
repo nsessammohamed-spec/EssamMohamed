@@ -6,6 +6,7 @@
   const E = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const link = u => { u = String(u || '').trim(); return /^(https?:\/\/|mailto:|tel:|#)/i.test(u) ? u : '#'; };
   const img = u => { u = String(u || '').trim(); return /^(https?:\/\/|data:image\/|images\/|assets\/)/i.test(u) ? u : ''; };
+  const imgsOf = p => { let a = Array.isArray(p.images) ? p.images.map(img).filter(Boolean) : []; if (!a.length) { const s = img(p.image); if (s) a = [s]; } return a; };
   const ext = u => /^https?:/i.test(u);
   const PREVIEW = /[?&]preview=1/.test(location.search) && window.parent !== window;
   let D = null, cur = 'all', io = null;
@@ -56,11 +57,12 @@
   }
 
   function card(p, i) {
-    const c = catOf(p.category), src = img(p.image);
+    const c = catOf(p.category), all = imgsOf(p), src = all[0];
     const media = '<div class="media">' +
       (src ? '<img loading="lazy" decoding="async" src="' + E(src) + '" alt="' + E(p.title) + '">' : '<div class="ph">' + ic(c.icon) + '</div>') +
       '<span class="cat-b">' + ic(c.icon) + ' ' + E(c.name) + '</span>' +
       '<span class="idx">' + String(i + 1).padStart(2, '0') + '</span>' +
+      (c.type !== 'video' && all.length > 1 ? '<span class="cnt">' + ic('layers') + all.length + ' صور</span>' : '') +
       (c.type === 'video' ? '<div class="pl"><span>' + ic('play') + '</span></div>' : '') + '</div>';
     const body = '<div class="cb">' + (p.tag ? '<span class="tg">' + E(p.tag) + '</span>' : '') + '<h3 dir="auto">' + E(p.title) + '</h3>' + (p.desc ? '<p>' + E(p.desc) + '</p>' : '') +
       '<span class="go">' + (c.type === 'video' ? 'شاهد العمل' : 'شوف العمل') + ' ' + ic('arrowL') + '</span></div>';
@@ -196,7 +198,7 @@
   /* لو صورة مش بتحمّل نرجّع الأيقونة بدلها */
   d.addEventListener('error', e => {
     const t = e.target;
-    if (t && t.tagName === 'IMG' && t.closest('.media')) { const m = t.parentNode; t.remove(); const pr = D.projects.find(p => img(p.image) === t.getAttribute('src')); if (!m.querySelector('.ph')) m.insertAdjacentHTML('afterbegin', '<div class="ph">' + ic(pr ? catOf(pr.category).icon : 'image') + '</div>'); }
+    if (t && t.tagName === 'IMG' && t.closest('.media')) { const m = t.parentNode; t.remove(); const pr = D.projects.find(p => imgsOf(p)[0] === t.getAttribute('src')); if (!m.querySelector('.ph')) m.insertAdjacentHTML('afterbegin', '<div class="ph">' + ic(pr ? catOf(pr.category).icon : 'image') + '</div>'); }
   }, true);
 
   /* ---------- boot ---------- */

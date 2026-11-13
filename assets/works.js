@@ -7,8 +7,14 @@
   const link = u => { u = String(u || '').trim(); return /^(https?:\/\/|mailto:|tel:|#)/i.test(u) ? u : '#'; };
   const img = u => { u = String(u || '').trim(); return /^(https?:\/\/|data:image\/|images\/|assets\/)/i.test(u) ? u : ''; };
   const pad = n => String(n).padStart(2, '0');
+  /* كل صور العمل: لو فيه images[] بنستخدمها، ولو لأ بنرجع للصورة الواحدة القديمة (image) */
+  const imgsOf = p => {
+    let a = Array.isArray(p.images) ? p.images.map(img).filter(Boolean) : [];
+    if (!a.length) { const s = img(p.image); if (s) a = [s]; }
+    return a;
+  };
   let D = null, cur = 'all', view = 'grid', io = null;
-  let vw = null, vwList = [], vwCur = null, vwPush = false, vwFocus = null, zoomed = false, swiped = false;
+  let vw = null, vwList = [], vwCur = null, vwI = 0, vwSheet = false, vwPush = false, vwFocus = null, zoomed = false, swiped = false;
   try { const v = localStorage.getItem('sx.wview'); if (v === 'grid' || v === 'big') view = v; } catch (e) {}
 
   /* ---------- theme (نفس منطق الصفحة الرئيسية) ---------- */
@@ -56,13 +62,14 @@
 
   /* ---------- tiles ---------- */
   function tile(p, i) {
-    const c = catOf(p.category), src = img(p.image);
-    return '<button type="button" class="wk-t" data-w="' + E(p.id) + '" aria-label="' + E(p.title) + '">' +
+    const c = catOf(p.category), all = imgsOf(p), src = all[0], n = all.length;
+    return '<button type="button" class="wk-t" data-w="' + E(p.id) + '" aria-label="' + E(p.title) + (n > 1 ? ' — ' + n + ' صور' : '') + '">' +
       '<span class="wk-m">' + (src ? '<img loading="lazy" decoding="async" src="' + E(src) + '" alt="' + E(p.title) + '">' : '<span class="ph">' + ic(c.icon) + '</span>') +
-      (c.type === 'video' ? '<span class="pl"><span>' + ic('play') + '</span></span>' : '') + '</span>' +
+      (c.type === 'video' ? '<span class="pl"><span>' + ic('play') + '</span></span>' : '') +
+      (c.type !== 'video' && n > 1 ? '<span class="wk-k">' + ic('layers') + '<b>' + n + '</b> صور</span>' : '') + '</span>' +
       '<span class="wk-n">' + pad(i + 1) + '</span>' +
       '<span class="wk-o">' + (p.tag ? '<span class="tg">' + E(p.tag) + '</span>' : '') + '<strong dir="auto">' + E(p.title) + '</strong>' +
-      (p.desc ? '<small>' + E(p.desc) + '</small>' : '') + '<em>' + (c.type === 'video' ? 'شاهد' : 'شوف العمل') + ' ' + ic('arrowL') + '</em></span></button>';
+      (p.desc ? '<small>' + E(p.desc) + '</small>' : '') + '<em>' + (c.type === 'video' ? 'شاهد' : n > 1 ? 'تصفّح الصور' : 'شوف العمل') + ' ' + ic('arrowL') + '</em></span></button>';
   }
   function fit(im) {
     if (!im || !im.naturalWidth) return;
@@ -134,29 +141,37 @@
   addEventListener('scroll', onScroll, { passive: true });
   addEventListener('resize', () => moveInd(false));
 
-  /* ---------- العارض (عرض العمل بالحجم الكامل) ---------- */
+  /* ---------- العارض: كتالوج العمل (كل صور العمل) + تنقل بين الأعمال ---------- */
   function parts(p, i, n) {
-    const c = catOf(p.category), src = img(p.image), href = link(p.link), em = c.type === 'video' ? embed(href) : '';
+    const c = catOf(p.category), href = link(p.link), em = c.type === 'video' ? embed(href) : '';
+    const pics = em ? [] : imgsOf(p), k = Math.min(vwI, Math.max(0, pics.length - 1)), src = pics[k];
     const fig = em ? '<div class="vw-v"><iframe src="' + E(em) + '" title="' + E(p.title) + '" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe></div>'
-      : src ? '<img src="' + E(src) + '" alt="' + E(p.title) + '" draggable="false">' : '<div class="vw-ph">' + ic(c.icon) + '</div>';
-    const go = (c.type === 'video' && !em && href !== '#') ? '<a class="btn primary vw-go" href="' + E(href) + '" target="_blank" rel="noopener noreferrer">شغّل الفيديو ' + ic('ext') + '</a>' : '';
+      : src ? '<img src="' + E(src) + '" alt="' + E(p.title) + (pics.length > 1 ? ' — ' + (k + 1) : '') + '" draggable="false">' : '<div class="vw-ph">' + ic(c.icon) + '</div>';
+    const go = (c.type === 'video' && !em && href !== '#') ? '<a class="btn primary vw-go" href="' + E(href) + '" target="_blank" rel="noopener noreferrer">شغّل الفيديو ' + ic('ext') + '</a>'
+      : (c.type !== 'video' && href !== '#') ? '<a class="btn vw-go" href="' + E(href) + '" target="_blank" rel="noopener noreferrer">افتح المشروع الأصلي ' + ic('ext') + '</a>' : '';
     return {
       cnt: pad(i + 1) + ' / ' + pad(n),
       cat: ic(c.icon) + ' ' + E(c.name),
-      fig: fig, emb: !!em,
+      fig: fig, emb: !!em, pics: pics, k: k,
       info: (p.tag ? '<span class="tg">' + E(p.tag) + '</span>' : '') + '<h2 dir="auto">' + E(p.title) + '</h2>' + (p.desc ? '<p>' + E(p.desc) + '</p>' : '') + go
     };
   }
-  function vwOpen(id) {
+  function vwOpen(id, k) {
     let L = list(), i = L.findIndex(p => p.id === id);
     if (i < 0) { L = shown(); i = L.findIndex(p => p.id === id); }
     if (i < 0) return;
+    const same = !!vw && id === vwCur;
     vwList = L; vwCur = id; zoomed = false;
+    if (!same) { vwI = k || 0; vwSheet = false; } else if (k != null) vwI = k;
     if (!vw) {
       vw = d.createElement('div'); vw.className = 'vw'; vw.setAttribute('role', 'dialog'); vw.setAttribute('aria-modal', 'true');
-      vw.innerHTML = '<div class="vw-top"><span class="vw-cnt"></span><span class="vw-cat"></span><button type="button" class="vw-x" data-vclose aria-label="إغلاق">' + ic('x') + '</button></div>' +
-        '<div class="vw-stage" id="vws"><figure class="vw-fig" id="vwf"></figure>' +
-        '<button type="button" class="vw-nav nx" data-vn="1" aria-label="التالي">' + ic('arrowL') + '</button><button type="button" class="vw-nav pv" data-vn="-1" aria-label="السابق">' + ic('arrowL') + '</button></div>' +
+      vw.innerHTML = '<div class="vw-top"><span class="vw-cnt" title="ترتيب العمل"></span><span class="vw-cat"></span><span class="vw-pg"></span>' +
+        '<span class="vw-tools"><button type="button" class="vw-b" data-vsheet aria-pressed="false" hidden>' + ic('grid') + '<span>كل الصور</span></button>' +
+        '<button type="button" class="vw-b pvw" data-vw="-1" aria-label="العمل السابق">' + ic('arrowL') + '<span>العمل السابق</span></button>' +
+        '<button type="button" class="vw-b" data-vw="1" aria-label="العمل التالي"><span>العمل التالي</span>' + ic('arrowL') + '</button></span>' +
+        '<button type="button" class="vw-x" data-vclose aria-label="إغلاق">' + ic('x') + '</button></div>' +
+        '<div class="vw-stage" id="vws"><figure class="vw-fig" id="vwf"></figure><div class="vw-sheet" id="vwsh"></div>' +
+        '<button type="button" class="vw-nav nx" data-vn="1" aria-label="الصورة التالية">' + ic('arrowL') + '</button><button type="button" class="vw-nav pv" data-vn="-1" aria-label="الصورة السابقة">' + ic('arrowL') + '</button></div>' +
         '<div class="vw-bot"><div class="vw-info" id="vwi"></div><div class="vw-th" id="vwt"></div></div>';
       vwFocus = d.activeElement; d.body.appendChild(vw); root.classList.add('vwo'); app.inert = true;
       vw.querySelector('.vw-x').focus({ preventScroll: true });
@@ -166,30 +181,48 @@
     if (location.hash !== h) { try { if (vwPush) history.replaceState({ vw: 1 }, '', h); else { history.pushState({ vw: 1 }, '', h); vwPush = true; } } catch (e) {} }
   }
   function vwUpdate() {
-    const L = vwList, n = L.length, i = Math.max(0, L.findIndex(p => p.id === vwCur)), p = L[i], x = parts(p, i, n);
+    const L = vwList, n = L.length, i = Math.max(0, L.findIndex(p => p.id === vwCur)), p = L[i], x = parts(p, i, n), np = x.pics.length;
+    const sheet = vwSheet && np > 1;
     vw.setAttribute('aria-label', p.title || '');
     vw.querySelector('.vw-cnt').textContent = x.cnt;
     vw.querySelector('.vw-cat').innerHTML = x.cat;
+    vw.querySelector('.vw-pg').textContent = np > 1 && !sheet ? 'صورة ' + pad(x.k + 1) + ' / ' + pad(np) : (np > 1 ? np + ' صور' : '');
+    const sb = vw.querySelector('[data-vsheet]'); sb.hidden = np < 2; sb.setAttribute('aria-pressed', String(sheet));
+    vw.querySelectorAll('[data-vw]').forEach(b => { b.hidden = n < 2; });
+    vw.classList.toggle('one', np < 2);
+    vw.classList.toggle('sheet', sheet);
+    zoomed = false;
     const f = d.getElementById('vwf'); f.className = 'vw-fig' + (x.emb ? ' emb' : ''); f.innerHTML = x.fig;
+    d.getElementById('vwsh').innerHTML = sheet ? x.pics.map((s, k) => '<button type="button" class="vw-sh' + (k === x.k ? ' on' : '') + '" data-vs="' + k + '" aria-label="صورة ' + (k + 1) + '"><img loading="lazy" decoding="async" src="' + E(s) + '" alt=""><span>' + pad(k + 1) + '</span></button>').join('') : '';
     d.getElementById('vwi').innerHTML = x.info;
-    vw.classList.toggle('one', n < 2);
     const t = d.getElementById('vwt');
-    if (!t.firstChild || t.children.length !== n) {
-      t.innerHTML = L.map((q, k) => '<button type="button" class="vw-t" data-vj="' + k + '" aria-label="' + E(q.title) + '">' + (img(q.image) ? '<img loading="lazy" decoding="async" src="' + E(img(q.image)) + '" alt="">' : ic(catOf(q.category).icon)) + '</button>').join('');
+    if (t.dataset.w !== p.id) {
+      t.dataset.w = p.id;
+      t.innerHTML = np > 1 ? x.pics.map((s, k) => '<button type="button" class="vw-t" data-vj="' + k + '" aria-label="صورة ' + (k + 1) + '"><img loading="lazy" decoding="async" src="' + E(s) + '" alt=""></button>').join('') : '';
     }
-    [].forEach.call(t.children, (b, k) => { b.classList.toggle('on', k === i); b.setAttribute('aria-current', k === i ? 'true' : 'false'); });
-    const on = t.children[i]; if (on && on.scrollIntoView) on.scrollIntoView({ inline: 'center', block: 'nearest' });
-    [i + 1, i - 1].forEach(k => { const q = L[(k + n) % n], s = q && img(q.image); if (s) new Image().src = s; });
+    [].forEach.call(t.children, (b, k) => { b.classList.toggle('on', k === x.k); b.setAttribute('aria-current', k === x.k ? 'true' : 'false'); });
+    const on = t.children[x.k]; if (on && on.scrollIntoView) on.scrollIntoView({ inline: 'center', block: 'nearest' });
+    const pre = []; if (np > 1) pre.push(x.pics[(x.k + 1) % np], x.pics[(x.k - 1 + np) % np]);
+    const nx = L[(i + 1) % n]; if (nx && nx !== p) pre.push(imgsOf(nx)[0]);
+    pre.forEach(s => { if (s) new Image().src = s; });
   }
+  /* تنقل بين صور العمل الواحد */
+  function vwImg(dir) {
+    if (!vw) return;
+    const p = vwList.find(q => q.id === vwCur), np = p ? imgsOf(p).length : 0;
+    if (np < 2) return;
+    vwI = (vwI + dir + np) % np; vwSheet = false; vwUpdate();
+  }
+  function vwGo(k) { vwI = k; vwSheet = false; vwUpdate(); }
+  /* تنقل بين الأعمال */
   function vwStep(dir) {
     if (!vw || vwList.length < 2) return;
     const i = vwList.findIndex(p => p.id === vwCur), n = vwList.length;
     vwOpen(vwList[(i + dir + n) % n].id);
   }
-  function vwGo(k) { if (vwList[k]) vwOpen(vwList[k].id); }
   function vwClose(fromPop) {
     if (!vw) return;
-    vw.remove(); vw = null; zoomed = false; root.classList.remove('vwo'); app.inert = false;
+    vw.remove(); vw = null; zoomed = false; vwCur = null; vwI = 0; vwSheet = false; root.classList.remove('vwo'); app.inert = false;
     if (!fromPop) {
       if (vwPush) { try { history.back(); } catch (e) {} }
       else if (/^#w-/.test(location.hash)) { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
@@ -218,13 +251,15 @@
     if (!st) return; st = false;
     if (!vw || zoomed) return;
     const dx = e.clientX - sx, dy = e.clientY - sy;
-    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) { swiped = true; setTimeout(() => { swiped = false; }, 350); vwStep(dx > 0 ? 1 : -1); }
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) { swiped = true; setTimeout(() => { swiped = false; }, 350); vwImg(dx > 0 ? 1 : -1); }
   });
   d.addEventListener('keydown', e => {
     if (!vw) return;
     if (e.key === 'Escape') vwClose();
-    else if (e.key === 'ArrowLeft') vwStep(1);
-    else if (e.key === 'ArrowRight') vwStep(-1);
+    else if (e.key === 'ArrowLeft') vwImg(1);
+    else if (e.key === 'ArrowRight') vwImg(-1);
+    else if (e.key === 'ArrowDown' || e.key === 'PageDown') { e.preventDefault(); vwStep(1); }
+    else if (e.key === 'ArrowUp' || e.key === 'PageUp') { e.preventDefault(); vwStep(-1); }
     else if (e.key === 'Tab') {
       const f = [].slice.call(vw.querySelectorAll('button,a[href]')).filter(x => !x.disabled && x.offsetParent !== null);
       if (!f.length) return;
@@ -254,10 +289,12 @@
     }
     if (t.closest('#menu a')) { d.getElementById('menu').classList.remove('open'); const b = d.querySelector('.burger'); if (b) b.setAttribute('aria-expanded', 'false'); }
     if (t.closest('[data-vclose]')) { vwClose(); return; }
-    const vn = t.closest('[data-vn]'); if (vn) { vwStep(+vn.dataset.vn); return; }
-    const vj = t.closest('[data-vj]'); if (vj) { vwGo(+vj.dataset.vj); return; }
+    const vn = t.closest('[data-vn]'); if (vn) { vwImg(+vn.dataset.vn); return; }
+    const vk = t.closest('[data-vw]'); if (vk) { vwStep(+vk.dataset.vw); return; }
+    const vh = t.closest('[data-vsheet]'); if (vh) { vwSheet = !vwSheet; vwUpdate(); return; }
+    const vj = t.closest('[data-vj],[data-vs]'); if (vj) { vwGo(+(vj.dataset.vj != null ? vj.dataset.vj : vj.dataset.vs)); return; }
     const zi = t.closest('.vw-fig img'); if (zi) { zoomAt(e, zi); return; }
-    if (vw && !t.closest('.vw-fig,.vw-nav,.vw-top,.vw-bot')) { vwClose(); return; }
+    if (vw && !t.closest('.vw-fig,.vw-sheet,.vw-nav,.vw-top,.vw-bot')) { vwClose(); return; }
     const f = t.closest('[data-f]'); if (f) { setFilter(f.dataset.f, true); return; }
     const v = t.closest('[data-v]'); if (v) { setView(v.dataset.v); return; }
     const w = t.closest('[data-w]'); if (w) { vwOpen(w.dataset.w); return; }

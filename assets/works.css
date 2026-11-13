@@ -59,7 +59,7 @@ html.vwo{overflow:hidden}
 .vw-top{display:flex;align-items:center;gap:16px;padding:14px 22px}
 .vw-cnt{font-family:"Alexandria",sans-serif;font-weight:700;font-size:15px;color:var(--accent);direction:ltr;letter-spacing:.04em}
 .vw-cat{display:inline-flex;align-items:center;gap:8px;font-family:"Alexandria",sans-serif;font-weight:500;font-size:14px;color:#ABA392}
-.vw-x{margin-inline-start:auto;width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#fff;display:grid;place-items:center;cursor:pointer;font-size:21px;transition:background .25s,border-color .25s,transform .25s}
+.vw-x{margin-inline-start:0;width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#fff;display:grid;place-items:center;cursor:pointer;font-size:21px;transition:background .25s,border-color .25s,transform .25s}
 .vw-x:hover{background:var(--accent);border-color:var(--accent);color:var(--on-accent);transform:rotate(90deg)}
 .vw-stage{position:relative;min-height:0;display:grid;grid-template:minmax(0,1fr)/minmax(0,1fr);place-items:center;padding:0 84px;overflow:hidden;touch-action:pan-y}
 .vw-fig{position:relative;margin:0;width:100%;height:100%;min-height:0;display:grid;grid-template:minmax(0,1fr)/minmax(0,1fr);place-items:center}
@@ -89,6 +89,33 @@ html.vwo{overflow:hidden}
 .vw-t.on{opacity:1;border-color:var(--accent);transform:translateY(-3px)}
 .vw :focus-visible{outline:3px solid var(--accent);outline-offset:3px}
 
+/* عدّاد الصور على الكارت */
+.wk-k{position:absolute;z-index:2;inset-block-start:12px;inset-inline-start:12px;display:inline-flex;align-items:center;gap:7px;padding:6px 13px;border-radius:999px;font-family:"Alexandria",sans-serif;font-weight:500;font-size:12.5px;line-height:1.5;color:#F4EEE1;background:rgba(11,10,8,.58);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.16)}
+.wk-k b{font-weight:700;color:#E8C976}
+
+/* شريط العارض: عدّاد الصور + أدوات */
+.vw-pg{font-family:"Alexandria",sans-serif;font-weight:500;font-size:14px;color:#F4EEE1;direction:rtl;padding:4px 12px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12)}
+.vw-pg:empty{display:none}
+.vw-tools{margin-inline-start:auto;display:flex;gap:8px;align-items:center}
+.vw-b{font:inherit;font-family:"Alexandria",sans-serif;font-weight:500;font-size:14px;display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 16px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#F4EEE1;cursor:pointer;transition:background .25s,border-color .25s,color .25s}
+.vw-b[hidden]{display:none}
+.vw-b:hover,.vw-b[aria-pressed=true]{background:rgba(var(--accent-rgb),.2);border-color:rgba(var(--accent-rgb),.7);color:#E8C976}
+.vw-b.pvw .i{transform:scaleX(-1)}
+
+/* فهرس الصور (شبكة كل صور العمل) */
+.vw-sheet{display:none;width:100%;height:100%;min-height:0;overflow-y:auto;align-content:start;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;padding:6px 2px 18px;scrollbar-width:thin}
+.vw.sheet .vw-sheet{display:grid}
+.vw.sheet .vw-fig,.vw.sheet .vw-nav{display:none}
+.vw-sh{all:unset;box-sizing:border-box;position:relative;display:block;aspect-ratio:4/3;border-radius:14px;overflow:hidden;cursor:pointer;background:#1C1913;border:2px solid transparent;transition:transform .35s var(--ease),border-color .25s}
+.vw-sh img{width:100%;height:100%;object-fit:cover;display:block}
+.vw-sh span{position:absolute;inset-block-end:8px;inset-inline-start:10px;font-family:"Alexandria",sans-serif;font-weight:700;font-size:13px;color:#E8C976;text-shadow:0 2px 10px rgba(0,0,0,.9);direction:ltr}
+.vw-sh:hover{transform:translateY(-4px);border-color:rgba(var(--accent-rgb),.7)}
+.vw-sh.on{border-color:var(--accent)}
+.vw-sh:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+
+/* شريط المصغّرات: أكبر شوية عشان كل صورة تتميّز */
+.vw-t{width:78px;height:58px}
+
 @media(max-width:1000px){.wk-grid{column-count:2}}
 @media(max-width:860px){
   .wk-hero{padding:120px 0 34px}
@@ -101,9 +128,14 @@ html.vwo{overflow:hidden}
   .wk-t{margin-bottom:18px}
   .wk-f button{padding:9px 16px;font-size:14px}
   .wk-v button{width:36px}
-  .vw-top{padding:10px 16px}
+  .vw-top{padding:10px 16px;gap:10px;flex-wrap:wrap}
   .vw-bot{padding:10px 16px 16px}
-  .vw-t{width:58px;height:44px}
+  .vw-t{width:62px;height:46px}
+  .vw-b{height:38px;padding:0 12px}
+  .vw-b span{display:none}
+  .vw-b[data-vsheet] span{display:inline}
+  .vw-sheet{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+  .vw-cat{display:none}
   .vw-info p{font-size:15px}
 }
 @media(prefers-reduced-motion:reduce){

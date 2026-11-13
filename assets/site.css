@@ -220,6 +220,7 @@ footer.f{margin-top:100px;border-top:1px solid var(--line);padding:30px 0 40px;c
 .media::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(11,10,8,.55),transparent 50%);opacity:0;transition:opacity .4s;pointer-events:none}
 .card:hover .media::after{opacity:1}
 .cat-b{position:absolute;z-index:2;inset-block-start:14px;inset-inline-start:14px;display:inline-flex;align-items:center;gap:7px;padding:6px 14px;border-radius:999px;font-family:"Alexandria",sans-serif;font-weight:500;font-size:12.5px;line-height:1.5;color:#F4EEE1;background:rgba(11,10,8,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.14)}
+.cnt{position:absolute;z-index:2;inset-block-end:14px;inset-inline-start:14px;display:inline-flex;align-items:center;gap:7px;padding:5px 13px;border-radius:999px;font-family:"Alexandria",sans-serif;font-weight:500;font-size:12.5px;line-height:1.5;color:#F4EEE1;background:rgba(11,10,8,.58);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.16)}
 .idx{position:absolute;z-index:2;inset-block-start:12px;left:16px;font-family:"Alexandria",sans-serif;font-weight:700;font-size:15px;color:#E8C976;text-shadow:0 2px 14px rgba(0,0,0,.8);direction:ltr}
 .go{display:flex;align-items:center;gap:8px;margin-top:14px;font-family:"Alexandria",sans-serif;font-weight:500;font-size:14px;color:var(--accent2)}
 .go .i{transition:transform .3s var(--ease)}
