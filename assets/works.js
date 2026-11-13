@@ -176,13 +176,14 @@
     const app = isApp(p, c), lks = (Array.isArray(p.links) ? p.links : []).filter(x => x && x.url && link(x.url) !== '#');
     const ft = (Array.isArray(p.features) ? p.features : []).filter(Boolean);
     const appGo = app ? (lks.length ? lks : (href !== '#' ? [{ label: T('wkOpenProj'), url: href }] : [])).map((x, j) => '<a class="btn' + (j ? '' : ' primary') + ' vw-go" href="' + E(link(x.url)) + '" target="_blank" rel="noopener noreferrer">' + E(x.label || T('wkOpenLink')) + ' ' + ic('ext') + '</a>').join('') : '';
+    const pgSg = window.SLUGS && window.SLUGS[p.id], pg = /^[a-z0-9-]+$/.test(pgSg || '') ? '<a class="btn ghost vw-go" href="work/' + pgSg + '/">صفحة العمل ' + ic('arrowL') + '</a>' : '';
     const go = app ? appGo : (c.type === 'video' && !em && href !== '#') ? '<a class="btn primary vw-go" href="' + E(href) + '" target="_blank" rel="noopener noreferrer">' + E(T('wkPlayVid')) + ' ' + ic('ext') + '</a>'
       : (c.type !== 'video' && href !== '#') ? '<a class="btn vw-go" href="' + E(href) + '" target="_blank" rel="noopener noreferrer">' + E(T('wkOpenOrig')) + ' ' + ic('ext') + '</a>' : '';
     return {
       cnt: pad(i + 1) + ' / ' + pad(n),
       cat: ic(c.icon) + ' ' + E(c.name),
       fig: fig, emb: !!em || !!vApp, pics: pics, k: k,
-      info: (p.tag ? '<span class="tg">' + E(p.tag) + '</span>' : '') + '<h2 dir="auto">' + E(p.title) + '</h2>' + (p.status ? '<span class="pj-st">' + E(p.status) + '</span>' : '') + (p.desc ? '<p>' + E(p.desc) + '</p>' : '') + (app ? chips(p) : '') + (app && ft.length ? '<ul class="ft">' + ft.map(f => '<li>' + ic('check') + '<span dir="auto">' + E(f) + '</span></li>').join('') + '</ul>' : '') + (app && vd ? '<button type="button" class="btn ghost vw-vt" data-vvid>' + ic('play') + ' ' + E(vwVid ? T('wkSeeShots') : T('wkWatchApp')) + '</button>' : '') + go
+      info: (p.tag ? '<span class="tg">' + E(p.tag) + '</span>' : '') + '<h2 dir="auto">' + E(p.title) + '</h2>' + (p.status ? '<span class="pj-st">' + E(p.status) + '</span>' : '') + (p.desc ? '<p>' + E(p.desc) + '</p>' : '') + (app ? chips(p) : '') + (app && ft.length ? '<ul class="ft">' + ft.map(f => '<li>' + ic('check') + '<span dir="auto">' + E(f) + '</span></li>').join('') + '</ul>' : '') + (app && vd ? '<button type="button" class="btn ghost vw-vt" data-vvid>' + ic('play') + ' ' + E(vwVid ? T('wkSeeShots') : T('wkWatchApp')) + '</button>' : '') + go + pg
     };
   }
   function vwOpen(id, k) {

@@ -1,0 +1,47 @@
+/* صفحات الأعمال (work/<slug>/) */
+.pj-links{display:flex;gap:4px;margin-inline-end:6px}
+.pj-links a{font-family:var(--f-ui);font-weight:500;font-size:15px;color:var(--muted);text-decoration:none;padding:8px 16px;border-radius:999px;transition:color .2s,background .2s}
+.pj-links a:hover{color:var(--ink);background:rgba(var(--accent-rgb),.12)}
+@media(max-width:520px){.nav .brand span{display:none}.pj-links a{padding:8px 12px}}
+.pj{padding:104px 0 56px}
+.pj .wrap{max-width:1040px}
+.crumbs{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-family:var(--f-ui);font-size:15px;color:var(--muted);margin:0 0 26px}
+.crumbs a{color:var(--muted);text-decoration:none}
+.crumbs a:hover{color:var(--accent2)}
+.crumbs [aria-current]{color:var(--ink);overflow-wrap:anywhere}
+.pj-h{max-width:860px;margin:0 0 30px}
+.pj-h h1{font-family:var(--f-head);font-weight:700;font-size:clamp(28px,4.6vw,48px);line-height:1.35;margin:8px 0 14px;overflow-wrap:anywhere}
+.pj-lead{font-size:clamp(17px,2vw,20px);color:var(--muted);margin:0 0 18px;line-height:1.9}
+.pj-meta{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:10px}
+.pj-meta li{font-family:var(--f-ui);font-size:14.5px;line-height:1.5;padding:5px 14px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.pj-meta li.c{border-color:rgba(var(--accent-rgb),.5);color:var(--accent2)}
+:root[data-mode=light] .pj-meta li.c{color:var(--accent-ink,#7A5A12)}
+.pj-fig{margin:0 0 18px;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:var(--surface)}
+.pj-fig a,.pj-g a{display:block;cursor:zoom-in}
+.pj-fig img{display:block;width:100%;height:auto}
+.pj-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:16px;margin:0 0 34px}
+.pj-g a{border-radius:18px;overflow:hidden;border:1px solid var(--line);background:var(--surface)}
+.pj-g img{display:block;width:100%;height:100%;object-fit:cover}
+.pj-g.app{grid-template-columns:repeat(auto-fill,minmax(min(46%,210px),1fr));justify-content:center}
+.pj-g.app img{object-fit:contain;background:var(--surface)}
+.pj-vid{aspect-ratio:16/9;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:#000;margin:0 0 18px}
+.pj-vid iframe,.pj-vid video{width:100%;height:100%;border:0;display:block}
+.pj section h2{font-family:var(--f-head);font-weight:700;font-size:clamp(21px,2.6vw,27px);margin:0 0 16px}
+.pj-ft{list-style:none;padding:0;margin:0 0 36px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px 24px}
+.pj-ft li{display:flex;gap:12px;align-items:flex-start;line-height:1.8}
+.pj-ft .i{margin-top:.45em;color:var(--accent2);background:rgba(var(--accent-rgb),.12);border-radius:50%;padding:3px;width:1.5em;height:1.5em}
+:root[data-mode=light] .pj-ft .i{color:var(--accent-ink,#7A5A12)}
+.pj-cta{display:flex;flex-wrap:wrap;gap:12px;margin:6px 0 56px}
+.pj-cta .btn{padding:14px 28px}
+@media(max-width:640px){.pj-cta .btn{flex:1 1 100%;justify-content:center}}
+.pj-rel h2{margin-bottom:18px}
+.pj-rg{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:16px}
+.pj-rc{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:var(--surface);text-decoration:none;color:var(--ink);transition:transform .25s var(--ease),border-color .25s}
+.pj-rc:hover{transform:translateY(-4px);border-color:rgba(var(--accent-rgb),.55)}
+.pj-rc span{display:block;aspect-ratio:4/3;background:var(--surface2);overflow:hidden}
+.pj-rc img{display:block;width:100%;height:100%;object-fit:cover}
+.pj-rc strong{padding:14px 16px;font-family:var(--f-ui);font-weight:500;font-size:16px;line-height:1.6}
+.lbx{position:fixed;inset:0;z-index:300;display:grid;place-items:center;background:rgba(0,0,0,.93);padding:24px;cursor:zoom-out}
+.lbx img{max-width:100%;max-height:100%;object-fit:contain;border-radius:12px}
+.lbx button{position:absolute;top:16px;inset-inline-end:16px;width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.5);color:#fff;font-size:22px;cursor:pointer}
+@media(prefers-reduced-motion:reduce){.pj-rc{transition:none}}

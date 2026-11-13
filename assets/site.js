@@ -102,6 +102,8 @@
   const vOf = p => { const u = String((p && p.video) || '').trim(); if (!u) return null; let m = /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/.exec(u); if (m) return { e: 'https://www.youtube-nocookie.com/embed/' + m[1] + '?rel=0' }; m = /vimeo\.com\/(?:video\/)?(\d+)/.exec(u); if (m) return { e: 'https://player.vimeo.com/video/' + m[1] }; return /^(https?:\/\/|videos\/|blob:)/i.test(u) ? { f: u } : null; };
   const player = (p, poster) => { const v = vOf(p); if (!v) return ''; return v.e ? '<iframe src="' + E(v.e) + '" title="' + E(p.title) + '" loading="lazy" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe>' : '<video src="' + E(v.f) + '" controls playsinline preload="metadata"' + (poster ? ' poster="' + E(poster) + '"' : '') + '></video>'; };
 
+  /* رابط صفحة العمل المستقلة (من data/slugs.js)، ولو مش موجودة بيرجع لعارض الأعمال */
+  const pageHref = p => { const sg = window.SLUGS && window.SLUGS[p.id]; return /^[a-z0-9-]+$/.test(sg || '') ? 'work/' + sg + '/' : 'works.html#w-' + encodeURIComponent(p.id); };
   function card(p, i) {
     const c = catOf(p.category), all = imgsOf(p), src = all[0];
     const app = isApp(p, c);
@@ -114,12 +116,12 @@
       (c.type === 'video' ? '<div class="pl"><span>' + ic('play') + '</span></div>' : '') + '</div>';
     const body = '<div class="cb">' + (p.tag ? '<span class="tg">' + E(p.tag) + '</span>' : '') + '<h3 dir="auto">' + E(p.title) + '</h3>' + (p.desc ? '<p dir="auto">' + E(p.desc) + '</p>' : '') + chips(p) +
       '<span class="go">' + E(app ? T('cardGoApp') : T(c.type === 'video' ? 'cardGoVid' : 'cardGoImg')) + ' ' + ic('arrowL') + '</span></div>';
-    return '<a class="card' + (p.featured ? ' feat' : '') + '" style="--i:' + i + ';--c:' + rgbOf(c, Math.max(0, D.categories.findIndex(x => x.id === p.category))) + '" href="works.html#w-' + encodeURIComponent(p.id) + '" aria-label="' + E(p.title) + '">' + media + body + '</a>';
+    return '<a class="card' + (p.featured ? ' feat' : '') + '" style="--i:' + i + ';--c:' + rgbOf(c, Math.max(0, D.categories.findIndex(x => x.id === p.category))) + '" href="' + pageHref(p) + '" aria-label="' + E(p.title) + '">' + media + body + '</a>';
   }
 
   /* لوحة تطبيق/لعبة تفاعلية: لقطات بتتبدّل لوحدها + تبويب فيديو + مميزات */
   function showcase(p) {
-    const c = catOf(p.category), all = imgsOf(p), href = 'works.html#w-' + encodeURIComponent(p.id), vd = vOf(p), shots = all.slice(0, 8);
+    const c = catOf(p.category), all = imgsOf(p), href = pageHref(p), vd = vOf(p), shots = all.slice(0, 8);
     const ft = (Array.isArray(p.features) ? p.features : []).filter(Boolean).slice(0, 6);
     const lks = (Array.isArray(p.links) ? p.links : []).filter(x => x && x.url && link(x.url) !== '#').slice(0, 2);
     const scr = shots.length ? shots.map((u, k) => '<img class="sc-s' + (k ? '' : ' on') + '" loading="lazy" decoding="async" src="' + E(u) + '" alt="' + E(p.title) + ' — ' + (k + 1) + '">').join('') : '<span class="ps"><b dir="auto">' + E(String(p.title || '').split('|')[0].trim().slice(0, 14)) + '</b><i></i><i></i><i></i></span>';

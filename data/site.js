@@ -5,7 +5,7 @@ window.SITE={
  },
  "theme": {
   "accent": "#C9A24B",
-  "mode": "auto",
+  "mode": "dark",
   "toggle": true
  },
  "hero": {
