@@ -6,6 +6,8 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#0B0A08">
 <title>لوحة التحكم</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self'; connect-src 'self' https://*.workers.dev; frame-src 'self'; base-uri 'none'; form-action 'self'; object-src 'none'">
+<meta name="referrer" content="no-referrer">
 <link rel="stylesheet" href="admin.css">
 </head>
 <body>
@@ -13,24 +15,11 @@
 <div id="login" class="login">
   <form class="lcard" id="loginForm" autocomplete="off">
     <div class="lbrand"><span class="logo">ع</span><div><h1>لوحة التحكم</h1><p>إدارة موقعك من مكان واحد</p></div></div>
-    <label>اسم المستودع على GitHub
-      <input id="repo" dir="ltr" placeholder="اسم-حسابك/اسم-الريبو" required>
-    </label>
-    <label>التوكن (Token)
-      <span class="pw"><input id="token" type="password" dir="ltr" placeholder="github_pat_…" required><button type="button" class="ib" id="showTok" aria-label="إظهار التوكن"></button></span>
+    <label>كلمة السر
+      <span class="pw"><input id="pass" type="password" autocomplete="current-password" placeholder="اكتب كلمة السر" required><button type="button" class="ib" id="showTok" aria-label="إظهار كلمة السر"></button></span>
     </label>
     <p class="err" id="loginErr" role="alert" hidden></p>
     <button class="btn primary big" id="loginBtn" type="submit">دخول</button>
-    <details class="help">
-      <summary>إزاي أجيب التوكن؟ (مرة واحدة بس)</summary>
-      <ol>
-        <li>افتح <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">صفحة إنشاء التوكن</a> وسجّل دخول.</li>
-        <li><b>Token name</b>: اكتب أي اسم (مثلًا: my-website). <b>Expiration</b>: اختار أطول مدة.</li>
-        <li><b>Repository access</b> ← <b>Only select repositories</b> ← اختار ريبو الموقع بس.</li>
-        <li><b>Permissions</b> ← <b>Repository permissions</b> ← <b>Contents</b> ← <b>Read and write</b>. (ولو حبيت: <b>Pages</b> ← Read-only عشان تشوف حالة النشر.)</li>
-        <li>اضغط <b>Generate token</b> وانسخ التوكن والصقه هنا. هيتحفظ في متصفحك بس.</li>
-      </ol>
-    </details>
   </form>
 </div>
 
@@ -68,6 +57,7 @@
 </div>
 
 <script src="../assets/icons.js"></script>
+<script src="config.js"></script>
 <script src="admin.js"></script>
 </body>
 </html>

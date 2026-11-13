@@ -31,16 +31,17 @@
 
   /* ---------- GitHub ---------- */
   async function api(path, opt = {}) {
-    const r = await fetch('https://api.github.com' + path, Object.assign({}, opt, {
+    const r = await fetch(String(window.ADMIN_API || '').replace(/\/+$/, '') + '/gh' + path, Object.assign({}, opt, {
       cache: 'no-store',
-      headers: Object.assign({ Authorization: 'Bearer ' + gh.token, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' }, opt.headers || {})
+      headers: Object.assign({ Authorization: 'Bearer ' + gh.token, 'Content-Type': 'application/json' }, opt.headers || {})
     }));
     if (!r.ok) { const e = new Error('HTTP ' + r.status); e.status = r.status; try { e.body = await r.json(); } catch (x) {} throw e; }
     return r.status === 204 ? null : r.json();
   }
   function explain(e) {
-    if (e.status === 401) return 'التوكن غلط أو منتهي. اعمل توكن جديد وجرّب تاني.';
-    if (e.status === 403) return (e.body && /rate limit/i.test(e.body.message || '')) ? 'GitHub وقّفك شوية لكثرة الطلبات. استنى دقيقة وجرّب.' : 'التوكن مفيهوش صلاحية Contents: Read and write على الريبو ده.';
+    if (e.status === 401) { try { sessionStorage.removeItem('sx.admin.sess'); } catch (x) {} return 'الجلسة انتهت. اعمل ريفريش للصفحة وادخل بكلمة السر تاني.'; }
+    if (e.status === 429) return 'محاولات غلط كتير. استنى شوية وجرّب.';
+    if (e.status === 403) return (e.body && /rate limit/i.test(e.body.message || '')) ? 'GitHub وقّفك شوية لكثرة الطلبات. استنى دقيقة وجرّب.' : 'العملية دي مش مسموحة.';
     if (e.status === 404) return 'الريبو مش موجود، أو التوكن مش مديله صلاحية عليه. اتأكد من الاسم ومن إن التوكن مخصص للريبو ده.';
     if (e.status === 409 || e.status === 422) return 'حصل تعارض في الحفظ. جرّب تنشر تاني.';
     if (e instanceof TypeError) return 'مفيش اتصال بالإنترنت أو GitHub مش بيرد.';
@@ -66,9 +67,9 @@
   const isDirty = () => !!S && JSON.stringify(S) !== orig;
 
   async function connect(repo, token) {
-    gh.repo = repo.trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$/, '').replace(/\/+$/, '');
-    gh.token = token.trim();
-    if (!/^[\w.-]+\/[\w.-]+$/.test(gh.repo)) throw new Error('اكتب اسم الريبو بالشكل ده: اسم-حسابك/اسم-الريبو');
+    gh.repo = String(repo || '').trim();
+    gh.token = token;
+    if (!/^[\w.-]+\/[\w.-]+$/.test(gh.repo)) throw new Error('إعدادات السيرفر ناقصة (REPO).');
     const r = await api('/repos/' + gh.repo);
     gh.branch = r.default_branch || 'main';
     let f;
@@ -77,7 +78,8 @@
     gh.sha = f.sha;
     S = norm(parseSite(unb64(f.content)));
     orig = JSON.stringify(S);
-    LS.set('repo', gh.repo); LS.set('token', gh.token);
+    try { sessionStorage.setItem('sx.admin.sess', JSON.stringify({ repo: gh.repo, token: gh.token })); } catch (e) {}
+    LS.del('token');
     const owner = gh.repo.split('/')[0], name = gh.repo.split('/')[1];
     siteUrl = location.hostname.endsWith('github.io') || location.hostname === 'localhost' ? new URL('../', location.href).href : 'https://' + owner.toLowerCase() + '.github.io/' + (name.toLowerCase() === owner.toLowerCase() + '.github.io' ? '' : name + '/');
     api('/repos/' + gh.repo + '/pages').then(p => { if (p && p.html_url) { siteUrl = p.html_url; $('#openSite').href = siteUrl; } }).catch(() => {});
@@ -291,9 +293,9 @@
       '<div class="panel"><h2>محركات البحث (SEO)</h2><p class="sub">العنوان والوصف اللي بيظهروا في جوجل وعند مشاركة الرابط.</p><label>عنوان الموقع<input data-b="meta.title" value="' + esc(S.meta.title) + '"></label><label>الوصف<textarea rows="3" data-b="meta.description">' + esc(S.meta.description) + '</textarea></label><label>نص الفوتر<input data-b="footer" value="' + esc(S.footer) + '"></label></div>';
   }
   function vAccount() {
-    return '<div class="panel"><h2>الاتصال</h2><p class="sub">متصل بالريبو <b dir="ltr" style="color:var(--ink)">' + esc(gh.repo) + '</b> · فرع <b dir="ltr" style="color:var(--ink)">' + esc(gh.branch) + '</b></p><div class="chips"><a class="btn sm" target="_blank" rel="noopener" href="https://github.com/' + esc(gh.repo) + '/commits/' + esc(gh.branch) + '/data/site.js">' + I('history') + ' سجل التعديلات (ترجع لأي نسخة)</a><button class="btn sm danger" data-act="logout">' + I('logout') + ' تسجيل خروج ومسح التوكن</button></div></div>' +
+    return '<div class="panel"><h2>الاتصال</h2><p class="sub">متصل بالريبو <b dir="ltr" style="color:var(--ink)">' + esc(gh.repo) + '</b> · فرع <b dir="ltr" style="color:var(--ink)">' + esc(gh.branch) + '</b></p><div class="chips"><a class="btn sm" target="_blank" rel="noopener" href="https://github.com/' + esc(gh.repo) + '/commits/' + esc(gh.branch) + '/data/site.js">' + I('history') + ' سجل التعديلات (ترجع لأي نسخة)</a><button class="btn sm danger" data-act="logout">' + I('logout') + ' تسجيل خروج</button></div></div>' +
       '<div class="panel"><h2>نسخة احتياطية</h2><p class="sub">نزّل كل محتوى موقعك كملف، أو استرجعه.</p><div class="chips"><button class="btn sm" data-act="export">' + I('download') + ' تنزيل نسخة</button><button class="btn sm" data-act="import">' + I('upload') + ' استرجاع من ملف</button><input type="file" id="impf" accept=".json,.js,application/json" hidden></div></div>' +
-      '<div class="panel"><h2>مهم</h2><ul class="tips"><li>' + I('info') + '<span>التوكن محفوظ في متصفحك بس. لو بتستخدم جهاز مش بتاعك اعمل «تسجيل خروج».</span></li><li>' + I('info') + '<span>لو اتعدّل الموقع من مكان تاني (من GitHub مباشرة) افتح اللوحة تاني قبل ما تنشر عشان متمسحش تعديل.</span></li></ul></div>';
+      '<div class="panel"><h2>مهم</h2><ul class="tips"><li>' + I('info') + '<span>كلمة السر بتتراجع على سيرفر محمي، والتوكن مش موجود في المتصفح ولا في الريبو. الجلسة بتنتهي لوحدها بعد 4 ساعات، ولو الجهاز مش بتاعك اعمل «تسجيل خروج».</span></li><li>' + I('info') + '<span>لو اتعدّل الموقع من مكان تاني (من GitHub مباشرة) افتح اللوحة تاني قبل ما تنشر عشان متمسحش تعديل.</span></li></ul></div>';
   }
   const RENDER = { home: vHome, works: vWorks, cats: vCats, content: vContent, contact: vContact, look: vLook, account: vAccount };
 
@@ -347,7 +349,7 @@
     else if (a === 'acc') { S.theme.accent = b.dataset.c; touch(); go('look'); }
     else if (a === 'export') { const l = document.createElement('a'); l.href = URL.createObjectURL(new Blob(['window.SITE=' + JSON.stringify(S, null, 1) + ';\n'], { type: 'text/javascript' })); l.download = 'site-backup-' + new Date().toISOString().slice(0, 10) + '.js'; l.click(); }
     else if (a === 'import') { const f = $('#impf'); f.onchange = async () => { try { const x = parseSite(await f.files[0].text()); if (!Array.isArray(x.projects)) throw 0; S = norm(x); touch(); go('account'); toast('اتسترجعت النسخة — اضغط نشر لتطبيقها'); } catch (er) { toast('الملف ده مش نسخة صالحة.', true); } }; f.click(); }
-    else if (a === 'logout') { if (await ask('تسجّل خروج وتمسح التوكن من المتصفح؟', 'خروج')) { LS.del('token'); isDirty() && (orig = JSON.stringify(S)); location.reload(); } }
+    else if (a === 'logout') { if (await ask('تسجّل خروج؟', 'خروج')) { LS.del('token'); try { sessionStorage.removeItem('sx.admin.sess'); } catch (e) {} isDirty() && (orig = JSON.stringify(S)); location.reload(); } }
   });
 
   addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); publish(); } });
@@ -367,22 +369,28 @@
     updateBar(); go('home');
   }
   $('#showTok').innerHTML = I('eye');
-  $('#showTok').onclick = () => { const t = $('#token'); t.type = t.type === 'password' ? 'text' : 'password'; };
-  (function prefill() {
-    let repo = LS.get('repo') || '';
-    if (!repo && /github\.io$/.test(location.hostname)) {
-      const owner = location.hostname.split('.')[0], segs = location.pathname.split('/').filter(Boolean);
-      repo = owner + '/' + (segs[0] && segs[0] !== 'admin' && !/\./.test(segs[0]) ? segs[0] : owner + '.github.io');
-    }
-    $('#repo').value = repo;
-    if (LS.get('token')) $('#token').value = LS.get('token');
-  })();
-  async function login(auto) {
+  $('#showTok').onclick = () => { const t = $('#pass'); t.type = t.type === 'password' ? 'text' : 'password'; };
+  async function login() {
     const btn = $('#loginBtn'), er = $('#loginErr'); er.hidden = true; btn.disabled = true; btn.textContent = 'جاري الدخول…';
-    try { await connect($('#repo').value, $('#token').value); start(); }
-    catch (e) { if (!auto) { er.textContent = e.status ? explain(e) : e.message; er.hidden = false; } else { $('#login').hidden = false; } }
+    try {
+      const api0 = String(window.ADMIN_API || '').replace(/\/+$/, '');
+      if (!/^https:\/\//.test(api0) || /[^\x00-\x7F]/.test(api0)) throw new Error('لسه متظبطش رابط السيرفر. افتح admin/config.js وحط رابط الـWorker.');
+      let r;
+      try { r = await fetch(api0 + '/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: $('#pass').value }), cache: 'no-store' }); }
+      catch (e) { throw new Error('مفيش اتصال بالسيرفر. اتأكد من الإنترنت ومن رابط الـWorker.'); }
+      const d = await r.json().catch(() => ({}));
+      if (r.status === 401) throw new Error('كلمة السر غلط.');
+      if (r.status === 429) throw new Error('محاولات غلط كتير. الدخول مقفول مؤقتًا — جرّب بعد 15 دقيقة.');
+      if (r.status === 403) throw new Error('الرابط ده مش مسموح له يدخل اللوحة (راجع ALLOWED_ORIGIN).');
+      if (!r.ok || !d.session) throw new Error('السيرفر مش متظبط صح (راجع الـSecrets).');
+      $('#pass').value = '';
+      await connect(d.repo, d.session); start();
+    } catch (e) { er.textContent = e.status ? explain(e) : e.message; er.hidden = false; }
     finally { btn.disabled = false; btn.textContent = 'دخول'; }
   }
-  $('#loginForm').onsubmit = e => { e.preventDefault(); login(false); };
-  if (LS.get('repo') && LS.get('token')) login(true);
+  $('#loginForm').onsubmit = e => { e.preventDefault(); login(); };
+  (async function boot() {
+    let s = null; try { s = JSON.parse(sessionStorage.getItem('sx.admin.sess') || 'null'); } catch (e) {}
+    if (s && s.repo && s.token) { try { await connect(s.repo, s.token); start(); } catch (e) { try { sessionStorage.removeItem('sx.admin.sess'); } catch (x) {} } }
+  })();
 })();
