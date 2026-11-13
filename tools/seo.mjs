@@ -67,6 +67,12 @@ const faq = (D.faq || []).length ? {
 const pkgs = (D.packages || []).filter(k => k.name && k.visible !== false);
 const waDigits = String(D.contact?.whatsapp || '').replace(/\D/g, '');
 /* نشاط الخدمات: بيخلّي جوجل يفهم إنك بتقدّم خدمات (مش مجرد شخص) وبيربط كل باقة بخدمة */
+/* بيحوّل نص السعر ("500 جنيه") لسعر منظّم في السيو. الواجهة بتكتب "ابتداءً من" فبنستخدم minPrice */
+const offerPrice = txt => {
+  const AR = '٠١٢٣٤٥٦٧٨٩';
+  const n = parseFloat(String(txt || '').replace(/[٠-٩]/g, d => AR.indexOf(d)).replace(/[,٬\s]/g, '').match(/\d+(?:\.\d+)?/)?.[0]);
+  return Number.isFinite(n) ? { priceSpecification: { '@type': 'PriceSpecification', minPrice: n, priceCurrency: 'EGP' } } : {};
+};
 const biz = pkgs.length ? {
   '@context': 'https://schema.org', '@type': 'ProfessionalService',
   ...(site && { '@id': site + '#service', url: site }),
@@ -81,6 +87,7 @@ const biz = pkgs.length ? {
     '@type': 'OfferCatalog', name: 'الباقات والخدمات',
     itemListElement: pkgs.map(k => ({
       '@type': 'Offer',
+      ...offerPrice(k.price),
       itemOffered: { '@type': 'Service', name: k.name, ...(k.desc && { description: k.desc }), ...(catName(k.category) && { serviceType: catName(k.category) }) }
     }))
   }

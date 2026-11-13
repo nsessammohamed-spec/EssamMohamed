@@ -507,3 +507,6 @@
     d.head.appendChild(s);
   }
 })();
+
+/* تسجيل الـService Worker (بيشتغل على https أو localhost بس) */
+if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));

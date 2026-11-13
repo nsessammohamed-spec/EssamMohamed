@@ -458,3 +458,8 @@ dialog.pal .pk{display:flex;flex-direction:column;max-height:70vh}
 .toc~.lp{top:150px}
 @media(max-width:900px){.toc{top:60px;margin-top:0}.toc~.lp{top:auto}.view .panel{scroll-margin-top:130px}.list.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.wc-t{padding:10px 12px 4px}.wc-t b{font-size:14px}.wc .acts{margin:6px 8px 10px}.wc .acts .ib{height:32px}}
 @media(max-width:420px){.list.grid{grid-template-columns:minmax(0,1fr)}.wc-img{aspect-ratio:16/10}}
+
+/* إخفاء عناصر من التصميم فقط (الكود لسه شغال، امسح السطور دي لو عايزهم يرجعوا) */
+#fch{display:none!important}                                   /* فلاتر الأعمال: الكل / ظاهر / مخفي / مميز */
+.welcome ~ .comp,.welcome ~ .cards,.welcome ~ .qa,.welcome ~ .steps,   /* اكتمال الموقع + الإحصائيات + الإجراءات السريعة + طريقة الاستخدام */
+.welcome ~ .sec-h,.welcome ~ .panel{display:none!important}    /* عناوين الأقسام + اقتراحات التحسين */
