@@ -38,9 +38,6 @@
 :root[data-theme=light] .sw input:checked::after{background:#fff}
 :root[data-theme=light] .sw input::after{box-shadow:0 1px 3px rgba(0,0,0,.3)}
 :root[data-theme=light] .welcome{background:radial-gradient(70% 120% at 100% 0,rgba(201,162,75,.28),transparent 60%),linear-gradient(135deg,#FFF8E6,#FBF3DC);border-color:rgba(160,120,30,.35)}
-:root[data-theme=light] .lside{background:radial-gradient(80% 60% at 100% 0,rgba(201,162,75,.3),transparent 60%),radial-gradient(60% 50% at 0 100%,rgba(201,162,75,.15),transparent 60%),linear-gradient(160deg,#FFF9EA,#F3EDDD 70%)}
-:root[data-theme=light] .lside h2 em{background:linear-gradient(135deg,#B8861F,#8A6616);-webkit-background-clip:text;background-clip:text}
-:root[data-theme=light] .lfeat li::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238A6616' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E")}
 :root[data-theme=light] select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236B6454' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")}
 :root[data-theme=light] .err{color:#B91C1C;background:rgba(220,38,38,.07)}
 :root[data-theme=light] dialog{box-shadow:0 40px 90px -20px rgba(60,45,10,.45)}
@@ -107,19 +104,12 @@ small.h{display:block;color:var(--dim);font-size:12.5px;font-weight:400;margin-t
 .pw{position:relative;display:block}.pw input{padding-inline-end:48px}.pw .ib{position:absolute;inset-inline-end:6px;top:11px}
 
 /* ---------- تسجيل الدخول ---------- */
-.login{min-height:100vh;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);background:var(--bg)}
-.lside{position:relative;overflow:hidden;padding:56px 56px 48px;display:flex;flex-direction:column;justify-content:space-between;gap:40px;background:radial-gradient(80% 60% at 100% 0,rgba(201,162,75,.22),transparent 60%),radial-gradient(60% 50% at 0 100%,rgba(201,162,75,.12),transparent 60%),linear-gradient(160deg,#17130B,#0A0907 70%);border-inline-end:1px solid var(--line)}
-.lside::before{content:"";position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:44px 44px;mask-image:radial-gradient(70% 70% at 50% 40%,#000,transparent);-webkit-mask-image:radial-gradient(70% 70% at 50% 40%,#000,transparent);opacity:.5;pointer-events:none}
-.lside>*{position:relative}
-.lside .lb{display:flex;align-items:center;gap:12px;font-family:"Alexandria";font-weight:700;font-size:17px}
-.lside h2{font-size:clamp(28px,3.2vw,42px);line-height:1.35;max-width:14em}
-.lside h2 em{font-style:normal;background:linear-gradient(135deg,var(--acc2),var(--acc));-webkit-background-clip:text;background-clip:text;color:transparent}
-.lside .lead{color:var(--muted);margin-top:16px;max-width:30em;font-size:16px}
-.lfeat{list-style:none;margin:0;padding:0;display:grid;gap:14px}
-.lfeat li{display:flex;align-items:center;gap:12px;color:var(--ink2);font-size:15px}
-.lfeat li::before{content:"";width:22px;height:22px;border-radius:50%;flex:none;background:var(--acc-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E8C976' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E") center/12px no-repeat;border:1px solid var(--acc-ring)}
+.login{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);background:radial-gradient(70% 55% at 50% 0,rgba(201,162,75,.16),transparent 65%),var(--bg)}
 .lmain{display:grid;place-items:center;padding:32px}
-.lcard{width:min(440px,100%)}
+.lcard{width:min(440px,100%);text-align:center}
+.lcard label{text-align:center}
+.lcard input{text-align:center;padding-inline:48px}
+.lcard .err{text-align:center}
 .lbrand{display:none}
 .lcard h1{font-size:28px;margin-bottom:6px}
 .lcard .lsub{color:var(--muted);margin-bottom:30px}
@@ -325,8 +315,8 @@ dialog>.db+.df{border-radius:0}
 
 @media(max-width:900px){
   :root{--pad:16px}
-  .login{grid-template-columns:1fr}.lside{display:none}
-  .lbrand{display:flex;gap:12px;align-items:center;margin-bottom:26px;font-family:"Alexandria";font-weight:700}
+  .login{grid-template-columns:1fr}
+  .lbrand{display:flex;justify-content:center;gap:12px;align-items:center;margin-bottom:26px;font-family:"Alexandria";font-weight:700}
   #app{grid-template-columns:1fr}
   .side{position:fixed;inset-block:0;inset-inline-start:0;width:min(300px,86vw);height:100vh;height:100dvh;z-index:60;transform:translateX(105%);transition:transform .28s cubic-bezier(.2,.8,.2,1);box-shadow:-30px 0 60px rgba(0,0,0,.6)}
   .side.open{transform:none}
