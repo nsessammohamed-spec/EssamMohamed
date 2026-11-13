@@ -314,7 +314,7 @@
     const kpi = (ic, n, l, sub) => '<div class="kpi"><span class="ic">' + I(ic) + '</span><div><b>' + n + '</b><span>' + l + '</span>' + (sub ? '<small>' + sub + '</small>' : '') + '</div></div>';
     return '<section class="welcome"><div><span class="eyebrow">لوحة التحكم</span><h2>أهلاً بيك' + (nm ? ' يا ' + nm : '') + '</h2><p>عدّل أي حاجة في موقعك من هنا، وشوفها في المعاينة، وبعدين انشرها بضغطة واحدة.</p></div>' +
       '<div class="wa"><button class="btn primary" data-act="addWork">' + I('plus') + ' إضافة عمل جديد</button><button class="btn" data-act="preview">' + I('eye') + ' معاينة الموقع</button></div></section>' +
-      '<figure class="kidfig"><div class="kidfig-s"><img src="kid.webp" alt="" width="558" height="1251" decoding="async"></div></figure>' +
+      '<figure class="kidfig"><div class="kb kb-r" role="note">مرحبا بك في لوحة التحكم الرئيسية في موقعك</div><div class="kidfig-s"><img src="kid.webp" alt="" width="558" height="1251" decoding="async"></div><div class="kb kb-l" role="note">هنا تقدر تعدل وتضيف كل اللي نفسك فيه</div></figure>' +
       comp + '<div class="cards">' + kpi('folder', P.length, 'عمل', vis + ' ظاهر للزوار') + kpi('grid', S.categories.length, 'قسم') + kpi('star', S.packages.length, 'باقة') + kpi('bolt', S.skills.length, 'أداة / مهارة') + '</div>' +
       '<div class="sec-h"><h2>إجراءات سريعة</h2><span>اختصارات لأكتر الحاجات استخدامًا</span></div>' +
       '<div class="qa">' + qc('user', 'الصفحة الرئيسية', 'الاسم والصورة والنبذة', 'data-go="content"') + qc('star', 'الباقات والأسعار', 'أضف أو عدّل باقاتك', 'data-go="pricing"') + qc('mail', 'بيانات التواصل', 'الإيميل وواتساب والسوشيال', 'data-go="contact"') + qc('sliders', 'المظهر والألوان', 'غيّر هوية الموقع', 'data-go="look"') + '</div>' +
