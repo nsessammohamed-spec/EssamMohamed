@@ -42,7 +42,7 @@ const catName = id => (D.categories || []).find(c => c.id === id)?.name || '';
 /* ---------- 1) <head> ---------- */
 const sameAs = (D.contact?.socials || []).map(s => s.url).filter(u => /^https:/.test(u));
 const person = {
-  '@context': 'https://schema.org', '@type': 'Person',
+  '@context': 'https://schema.org', '@type': 'Person', ...(site && { '@id': site + '#person' }),
   name: D.hero?.name, description: desc, jobTitle: JOB,
   ...(site && { url: site }), ...(abs(D.hero?.photo) && { image: abs(D.hero.photo) }),
   ...(D.contact?.email && { email: D.contact.email }),
@@ -53,6 +53,30 @@ const faq = (D.faq || []).length ? {
   '@context': 'https://schema.org', '@type': 'FAQPage',
   mainEntity: D.faq.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } }))
 } : null;
+const pkgs = (D.packages || []).filter(k => k.name && k.visible !== false);
+const waDigits = String(D.contact?.whatsapp || '').replace(/\D/g, '');
+/* نشاط الخدمات: بيخلّي جوجل يفهم إنك بتقدّم خدمات (مش مجرد شخص) وبيربط كل باقة بخدمة */
+const biz = pkgs.length ? {
+  '@context': 'https://schema.org', '@type': 'ProfessionalService',
+  ...(site && { '@id': site + '#service', url: site }),
+  name: D.hero?.name, description: desc,
+  ...(abs(D.hero?.photo) && { image: abs(D.hero.photo) }),
+  ...(waDigits && { telephone: '+' + waDigits }),
+  ...(D.contact?.email && { email: D.contact.email }),
+  ...(CITY && { address: { '@type': 'PostalAddress', addressLocality: CITY, addressCountry: COUNTRY } }),
+  ...(site && { founder: { '@id': site + '#person' } }),
+  sameAs,
+  hasOfferCatalog: {
+    '@type': 'OfferCatalog', name: 'الباقات والخدمات',
+    itemListElement: pkgs.map(k => ({
+      '@type': 'Offer',
+      itemOffered: { '@type': 'Service', name: k.name, ...(k.desc && { description: k.desc }), ...(catName(k.category) && { serviceType: catName(k.category) }) }
+    }))
+  }
+} : null;
+const website = site ? { '@context': 'https://schema.org', '@type': 'WebSite', name: D.hero?.name, url: site, inLanguage: 'ar' } : null;
+const ogDimsMeta = (!Q.ogImage && cfg.OG_IMAGE_WIDTH && cfg.OG_IMAGE_HEIGHT)
+  ? ['<meta property="og:image:width" content="' + cfg.OG_IMAGE_WIDTH + '">', '<meta property="og:image:height" content="' + cfg.OG_IMAGE_HEIGHT + '">'] : [];
 const ld = o => '<script type="application/ld+json">' + JSON.stringify(o).replace(/</g, '\\u003c') + '</script>';
 
 const head = [
@@ -70,11 +94,12 @@ const head = [
   site && '<meta property="og:url" content="' + E(site) + '">',
   ogImg && '<meta property="og:image" content="' + E(ogImg) + '">',
   ogImg && '<meta property="og:image:alt" content="' + E(D.hero?.name) + '">',
+  ...ogDimsMeta,
   '<meta name="twitter:card" content="' + (ogImg ? 'summary_large_image' : 'summary') + '">',
   '<meta name="twitter:title" content="' + E(title) + '">',
   '<meta name="twitter:description" content="' + E(desc) + '">',
   ogImg && '<meta name="twitter:image" content="' + E(ogImg) + '">',
-  ld(person), faq && ld(faq)
+  ld(person), biz && ld(biz), website && ld(website), faq && ld(faq)
 ].filter(Boolean).join('\n');
 
 /* ---------- 2) المحتوى الثابت ---------- */
@@ -133,6 +158,7 @@ if (fs.existsSync(path.join(root, 'works.html'))) {
     '<meta property="og:locale" content="ar_AR">',
     wUrl && '<link rel="canonical" href="' + E(wUrl) + '">',
     wUrl && '<meta property="og:url" content="' + E(wUrl) + '">',
+    ...ogDimsMeta,
     ogImg && '<meta property="og:image" content="' + E(ogImg) + '">',
     '<meta name="sx-mode" content="' + E(['light', 'auto'].includes(D.theme?.mode) ? D.theme.mode : 'dark') + '">',
     '<meta name="robots" content="index,follow,max-image-preview:large">',

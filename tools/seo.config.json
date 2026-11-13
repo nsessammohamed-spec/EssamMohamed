@@ -3,5 +3,7 @@
   "OG_IMAGE": "images/og.jpg",
   "JOB_TITLE": "مصمم جرافيك ومطوّر تطبيقات",
   "CITY": "القاهرة",
-  "COUNTRY": "EG"
+  "COUNTRY": "EG",
+  "OG_IMAGE_WIDTH": 1200,
+  "OG_IMAGE_HEIGHT": 630
 }
