@@ -19,7 +19,7 @@ window.SITE={
   "cta1Link": "#work",
   "cta2Text": "تواصل معايا",
   "cta2Link": "#contact",
-  "photoStyle": "card",
+  "photoStyle": "arch",
   "facts": []
  },
  "stats": [],
