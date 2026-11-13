@@ -39,9 +39,7 @@
   /* ---------- helpers ---------- */
   const splitName = n => {
     const w = String(n || '').trim().split(/\s+/);
-    if (w.length < 2) return [w[0] || '', ''];
-    const k = Math.ceil(w.length / 2);
-    return [w.slice(0, k).join(' '), w.slice(k).join(' ')];
+    return [w[0] || '', w.slice(1).join(' ')];
   };
   const catOf = id => D.categories.find(c => c.id === id) || { name: '', icon: 'star', type: 'image' };
   const shown = () => D.projects.filter(p => p.visible !== false);
@@ -100,10 +98,13 @@
         '<div class="grid rv" id="grid">' + grid() + '</div><div class="more rv"><a class="btn ghost" href="works.html">شوف صفحة الأعمال كاملة ' + ic('arrowL') + '</a></div></div></section>');
     }
 
-    if (A.text || skills.length) {
+    const mine = (Array.isArray(A.photos) ? A.photos : []).map(img).filter(Boolean);
+    if (A.text || skills.length || mine.length) {
       menu.push(['#about', 'عني']);
       sections.push('<section class="s" id="about"><div class="wrap"><div class="sh rv"><span class="no">' + num() + '</span><h2>' + E(A.title || 'نبذة عني') + '</h2></div><div class="about"><p class="tx rv">' + E(A.text) + '</p>' +
-        (skills.length ? '<div class="skills rv"><h3>الأدوات والمهارات</h3>' + skills.map(s => '<span class="sk">' + E(s) + '</span>').join('') + '</div>' : '') + '</div></div></section>');
+        (skills.length ? '<div class="skills rv"><h3>الأدوات والمهارات</h3>' + skills.map(s => '<span class="sk">' + E(s) + '</span>').join('') + '</div>' : '') + '</div>' +
+        (mine.length ? '<div class="mine rv"><h3>' + E(A.photosTitle || 'لقطات مني') + '</h3><div class="mine-g">' + mine.map((u, i) => '<button type="button" class="mine-i" data-lb="' + E(u) + '" aria-label="تكبير الصورة ' + (i + 1) + '"><img loading="lazy" decoding="async" src="' + E(u) + '" alt="' + E(H.name) + ' — صورة ' + (i + 1) + '"></button>').join('') + '</div></div>' : '') +
+        '</div></section>');
     }
 
     const wa = String(C.whatsapp || '').replace(/\D/g, '');
@@ -122,18 +123,18 @@
       '<button type="button" class="ib burger" data-act="menu" aria-label="القائمة" aria-expanded="false">' + ic('menu') + '</button></div></header>';
 
     const chips = skills.slice(0, 3).map(s => '<span class="chip">' + E(s) + '</span>').join('');
-    const photo = img(H.photo);
+    const photo = img(H.photo), ps = ['card', 'arch', 'round'].indexOf(H.photoStyle) > -1 ? H.photoStyle : 'card';
     const hero = '<section class="hero" id="top"><div class="wrap hero-in"><div>' +
       (H.eyebrow ? '<p class="eyebrow rv">' + E(H.eyebrow) + '</p>' : '') +
-      '<h1 class="name rv" style="--d:.08s"><span>' + E(n1) + '</span>' + (n2 ? '<span class="g">' + E(n2) + '</span>' : '') + '</h1>' +
+      '<h1 class="name rv" style="--d:.08s" aria-label="' + E(H.name) + '"><span class="n1">' + E(n1) + '</span>' + (n2 ? ' <span class="n2">' + E(n2) + '</span>' : '') + '</h1>' +
       (H.sub ? '<p class="sub rv" style="--d:.16s">' + E(H.sub) + '</p>' : '') +
       '<div class="cta rv" style="--d:.24s">' +
       (H.cta1Text ? '<a class="btn primary" href="' + E(link(H.cta1Link)) + '">' + E(H.cta1Text) + ' ' + ic('arrowL') + '</a>' : '') +
       (H.cta2Text ? '<a class="btn ghost" href="' + E(link(H.cta2Link)) + '">' + E(H.cta2Text) + '</a>' : '') + '</div>' +
       (H.available && H.availableText ? '<p class="avail rv" style="--d:.3s"><span class="pulse"></span>' + E(H.availableText) + '</p>' : '') +
-      '</div><figure class="hero-ph rv" style="--d:.2s"><div class="arch">' +
-      (photo ? '<img src="' + E(photo) + '" alt="' + E(H.name) + '">' : '<div class="mono" aria-hidden="true">' + E((H.name || 'ع').trim().charAt(0)) + '</div>') +
-      '</div>' + chips + '</figure></div></section>';
+      '</div><figure class="hero-ph rv" data-ps="' + ps + '" style="--d:.2s"><div class="arch"' + (photo ? ' data-lb="' + E(photo) + '" title="تكبير الصورة"' : '') + '>' +
+      (photo ? '<img src="' + E(photo) + '" alt="' + E(H.name) + '" fetchpriority="high" decoding="async">' : '<div class="mono" aria-hidden="true">' + E((H.name || 'ع').trim().charAt(0)) + '</div>') +
+      '</div><i class="cr c1"></i><i class="cr c2"></i><i class="cr c3"></i><i class="cr c4"></i>' + chips + '</figure></div></section>';
 
     let base = []; while (skills.length && base.length < 8) base = base.concat(skills);
     const mk = k => base.map(s => '<span' + (k ? ' class="dup"' : '') + '>' + E(s) + '</span><i' + (k ? ' class="dup"' : '') + '></i>').join('');

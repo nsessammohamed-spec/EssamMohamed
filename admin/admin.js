@@ -60,7 +60,7 @@
   function norm(d) {
     d = d || {};
     d.meta = d.meta || {}; d.theme = Object.assign({ accent: '#C9A24B', mode: 'dark', toggle: true }, d.theme);
-    d.hero = d.hero || {}; d.about = d.about || {}; d.contact = d.contact || {}; d.contact.socials = d.contact.socials || [];
+    d.hero = d.hero || {}; d.about = d.about || {}; d.about.photos = Array.isArray(d.about.photos) ? d.about.photos : []; d.contact = d.contact || {}; d.contact.socials = d.contact.socials || [];
     ['stats', 'skills', 'categories', 'projects'].forEach(k => { if (!Array.isArray(d[k])) d[k] = []; });
     return d;
   }
@@ -136,13 +136,13 @@
   }
 
   /* معرض صور العمل: رفع أكتر من صورة، ترتيب، غلاف، حذف، ولصق روابط */
-  function galleryField(id) {
-    return '<label>صور العمل <small class="h" style="font-weight:400">— أول صورة هي الغلاف اللي بتظهر في الكارت</small></label>' +
+  function galleryField(id, label, note) {
+    return '<label>' + (label || 'صور العمل') + ' <small class="h" style="font-weight:400">' + (note || '— أول صورة هي الغلاف اللي بتظهر في الكارت') + '</small></label>' +
       '<div class="gal" id="' + id + '"><div class="gl" data-gl></div>' +
       '<div class="ga"><button type="button" class="btn sm" data-add>' + I('upload') + ' رفع صور (تقدر تختار كذا صورة مرة واحدة)</button>' +
       '<textarea dir="ltr" data-urls rows="2" placeholder="أو الصق روابط صور — رابط في كل سطر"></textarea>' +
       '<button type="button" class="btn sm ghost" data-addurls>' + I('plus') + ' إضافة الروابط</button>' +
-      '<small class="h">اسحب الصور هنا أو اضغط رفع. الصور بتتصغّر وتتضغط أوتوماتيك. استخدم الأسهم لترتيبها ونجمة لتعيين الغلاف.</small></div>' +
+      '<small class="h">اسحب الصور هنا أو اضغط رفع. الصور بتتصغّر وتتضغط أوتوماتيك. استخدم الأسهم لترتيبها (ونجمة لتعيين الأولى).</small></div>' +
       '<input type="file" accept="image/*" multiple hidden></div>';
   }
   function bindGallery(el, arr, max, onChange) {
@@ -193,7 +193,7 @@
   function previewData() {
     const c = JSON.parse(JSON.stringify(S));
     const fix = p => (p && imgs.has(p)) ? imgs.get(p).dataUrl : p;
-    c.hero.photo = fix(c.hero.photo); c.projects.forEach(p => { p.images = imgList(p).map(fix); p.image = p.images[0] || ''; });
+    c.hero.photo = fix(c.hero.photo); c.about.photos = (c.about.photos || []).map(fix); c.projects.forEach(p => { p.images = imgList(p).map(fix); p.image = p.images[0] || ''; });
     return c;
   }
   function pushPreview() {
@@ -204,7 +204,7 @@
   addEventListener('beforeunload', e => { if (isDirty()) { e.preventDefault(); e.returnValue = ''; } });
 
   /* ---------- publish ---------- */
-  const allImages = () => [S.hero.photo].concat(...S.projects.map(imgList)).filter(Boolean);
+  const allImages = () => [S.hero.photo].concat(S.about.photos || [], ...S.projects.map(imgList)).filter(Boolean);
   async function publish() {
     if (busy || !isDirty()) return;
     busy = true; updateBar();
@@ -322,11 +322,14 @@
     const h = S.hero, a = S.about;
     return '<div class="panel"><h2>الواجهة الرئيسية</h2><p class="sub">أول حاجة الزائر بيشوفها.</p>' +
       '<label>السطر الصغير فوق الاسم<input data-b="hero.eyebrow" value="' + esc(h.eyebrow) + '"></label><label>الاسم<input data-b="hero.name" value="' + esc(h.name) + '"></label><label>الجملة التعريفية<textarea rows="2" data-b="hero.sub">' + esc(h.sub) + '</textarea></label>' +
-      imageField('hp', 'الصورة الشخصية', h.photo, true) + '<small class="h">الأفضل صورة رأسية (4:5) بخلفية واضحة.</small><div style="height:16px"></div>' +
+      imageField('hp', 'الصورة الشخصية (الرئيسية)', h.photo, true) + '<small class="h">الأفضل صورة رأسية (4:5) بخلفية واضحة أو غامقة.</small><div style="height:16px"></div>' +
+      '<label>شكل إطار الصورة<select data-b="hero.photoStyle">' + [['card', 'كارت بإطار ذهبي (الافتراضي)'], ['arch', 'قوس'], ['round', 'دائرة']].map(o => '<option value="' + o[0] + '"' + ((h.photoStyle || 'card') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select></label><div style="height:8px"></div>' +
       '<label class="sw"><input type="checkbox" data-b="hero.available"' + (h.available ? ' checked' : '') + '>أظهر شارة «متاح للعمل»</label><label>نص الشارة<input data-b="hero.availableText" value="' + esc(h.availableText) + '"></label>' +
       '<div class="g2"><label>نص الزر الأول<input data-b="hero.cta1Text" value="' + esc(h.cta1Text) + '"></label><label>رابط الزر الأول<input dir="ltr" list="anch" data-b="hero.cta1Link" value="' + esc(h.cta1Link) + '"></label><label>نص الزر التاني<input data-b="hero.cta2Text" value="' + esc(h.cta2Text) + '"></label><label>رابط الزر التاني<input dir="ltr" list="anch" data-b="hero.cta2Link" value="' + esc(h.cta2Link) + '"></label></div>' +
       '<datalist id="anch"><option value="#work"><option value="#services"><option value="#about"><option value="#contact"></datalist></div>' +
-      '<div class="panel"><h2>نبذة عني</h2><p class="sub">&nbsp;</p><label>العنوان<input data-b="about.title" value="' + esc(a.title) + '"></label><label>النص<textarea rows="5" data-b="about.text">' + esc(a.text) + '</textarea></label></div>' +
+      '<div class="panel"><h2>نبذة عني</h2><p class="sub">&nbsp;</p><label>العنوان<input data-b="about.title" value="' + esc(a.title) + '"></label><label>النص<textarea rows="5" data-b="about.text">' + esc(a.text) + '</textarea></label>' +
+      '<label>عنوان معرض الصور<input data-b="about.photosTitle" placeholder="لقطات مني" value="' + esc(a.photosTitle) + '"></label>' +
+      galleryField('ap', 'صور شخصية إضافية', '— بتظهر في قسم «عني» وتتكبّر بالضغط عليها (الأفضل صور رأسية 4:5)') + '</div>' +
       '<div class="panel"><h2>الأدوات والمهارات</h2><p class="sub">بتظهر كشريط متحرك وفي قسم «عني».</p>' + simpleList('skills', S.skills, [['', 'اسم الأداة']]) + '<button class="btn sm" data-act="ladd" data-p="skills">' + I('plus') + ' إضافة</button></div>' +
       '<div class="panel"><h2>أرقام وإنجازات</h2><p class="sub">اختياري — لو فاضية، القسم بيختفي. (مثال: 5+ / سنين خبرة)</p>' + simpleList('stats', S.stats, [['value', '5+', 'n ltr'], ['label', 'سنين خبرة']]) + '<button class="btn sm" data-act="ladd" data-p="stats">' + I('plus') + ' إضافة رقم</button></div>';
   }
@@ -359,6 +362,7 @@
     if (v === 'cats') sortable($('#clist'), () => S.categories, () => { touch(); go('cats'); });
     ['skills', 'stats', 'contact.socials'].forEach(p => { const c = $('#l_' + p); if (c) sortable(c, () => get(S, p), () => { touch(); go(view); }); });
     const hp = $('#hp'); if (hp) bindImageField(hp, 1200, v => { S.hero.photo = v; touch(); });
+    const mg = $('#ap'); if (mg) bindGallery(mg, S.about.photos.slice(), 1200, v => { S.about.photos = v; touch(); });
     const ap = $('#accPick'); if (ap) ap.oninput = () => { S.theme.accent = ap.value; touch(); $$('.sw-c').forEach(x => x.classList.remove('on')); };
   }
 
