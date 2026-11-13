@@ -16,7 +16,7 @@
   const rgbOf = (c, i) => { const m = /^#([0-9a-f]{6})$/i.exec((c && c.color) || ''); return m ? h2r(m[1]).join(',') : PAL[i % PAL.length]; };
   const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
   /* كل النصوص الثابتة — بتتعدل من لوحة التحكم (تاب النصوص والأقسام) */
-  const LB = {"navWork": "أعمالي", "navServices": "خدماتي", "navAbout": "عني", "navFaq": "أسئلة", "navPricing": "الباقات", "navProof": "ليه أنا", "pricingTitle": "الباقات والأسعار", "pricingSub": "اختار الخدمة وشوف إيه اللي هتستلمه، والسعر بيتحدد حسب شغلك.", "pkAsk": "اطلب عرض سعر", "pkFrom": "ابتداءً من", "pkCustom": "السعر حسب المشروع", "proofTitle": "ليه تشتغل معايا؟", "proofSub": "حاجات بتفرق معاك في الشغل.", "tstTitle": "عملاء اشتغلت معاهم", "svcAsk": "اطلب الخدمة", "navContact": "تواصل", "servicesTitle": "بشتغل في إيه؟", "servicesSub": "اختار المجال وشوف شغلي فيه.", "svcSee": "شوفهم", "svcSoon": "قريبًا", "workTitle": "أعمالي", "workSub": "اضغط على أي عمل تشوفه بالحجم الكامل.", "workMore": "شوف صفحة الأعمال كاملة", "filterAll": "الكل", "cardGoImg": "شوف العمل", "cardGoVid": "شاهد العمل", "emptyWorks": "لسه مفيش أعمال.", "aboutSkills": "الأدوات اللي بشتغل بيها", "aboutSpecs": "التخصصات", "aboutBtn1": "كلمني", "aboutBtn2": "كل أعمالي", "factWorks": "أعمال", "factCats": "مجالات", "factTools": "أدوات", "faqTitle": "أسئلة شائعة", "faqSub": "إجابات سريعة قبل ما نتكلم.", "formName": "اسمك", "formNamePh": "اكتب اسمك", "formSvc": "محتاج إيه؟", "formWhen": "الميعاد المطلوب", "formMsg": "تفاصيل شغلك", "formPreview": "الرسالة اللي هتتبعت", "formPreviewEmpty": "رسالتك هتظهر هنا وانت بتكتب.", "msgSvc": "محتاج:", "msgWhen": "الميعاد:", "mailSubject": "طلب شغل", "ccAvail": "متاح دلوقتي", "ccWa": "واتساب", "ccMail": "الإيميل", "ccCopy": "نسخ", "toastCopied": "اتنسخ الإيميل ✓", "toastNeed": "اكتب تفاصيل شغلك الأول", "toastReady": "اتجهّزت الرسالة ✓", "footUp": "للأعلى"};
+  const LB = {"navWork": "أعمالي", "navServices": "خدماتي", "navAbout": "عني", "navFaq": "أسئلة", "navPricing": "الباقات", "navProof": "ليه أنا", "pricingTitle": "الباقات والأسعار", "pricingSub": "اختار الخدمة وشوف إيه اللي هتستلمه، والسعر بيتحدد حسب شغلك.", "pkAsk": "اطلب عرض سعر", "pkFrom": "ابتداءً من", "pkCustom": "السعر حسب المشروع", "proofTitle": "ليه تشتغل معايا؟", "proofSub": "حاجات بتفرق معاك في الشغل.", "tstTitle": "عملاء اشتغلت معاهم", "svcAsk": "اطلب الخدمة", "navContact": "تواصل", "servicesTitle": "بشتغل في إيه؟", "servicesSub": "اختار المجال وشوف شغلي فيه.", "svcSee": "شوفهم", "svcSoon": "قريبًا", "workTitle": "أعمالي", "workSub": "اضغط على أي عمل تشوفه بالحجم الكامل.", "workMore": "شوف صفحة الأعمال كاملة", "filterAll": "الكل", "cardGoImg": "شوف العمل", "cardGoVid": "شاهد العمل", "emptyWorks": "لسه مفيش أعمال.", "aboutSkills": "الأدوات اللي بشتغل بيها", "aboutSpecs": "التخصصات", "aboutBtn1": "كلمني", "aboutBtn2": "كل أعمالي", "factWorks": "أعمال", "factCats": "مجالات", "factTools": "أدوات", "faqTitle": "أسئلة شائعة", "faqSub": "إجابات سريعة قبل ما نتكلم.", "formName": "اسمك", "formNamePh": "اكتب اسمك", "formSvc": "محتاج إيه؟", "formWhen": "الميعاد المطلوب", "formMsg": "تفاصيل شغلك", "formPreview": "الرسالة اللي هتتبعت", "formPreviewEmpty": "رسالتك هتظهر هنا وانت بتكتب.", "msgSvc": "محتاج:", "msgWhen": "الميعاد:", "mailSubject": "طلب شغل", "ccAvail": "متاح دلوقتي", "ccWa": "واتساب", "ccMail": "الإيميل", "ccCopy": "نسخ", "toastCopied": "اتنسخ الإيميل ✓", "toastNeed": "اكتب تفاصيل شغلك الأول", "toastReady": "اتجهّزت الرسالة ✓", "footUp": "للأعلى", "cardGoApp": "شوف تفاصيل التطبيق", "scShots": "اللقطات", "scVideo": "الفيديو", "scWatch": "شاهد الفيديو", "wkOpenProj": "افتح المشروع", "wkVidBadge": "فيديو"};
   const T = k => { const v = D && D.labels && D.labels[k]; return v != null && String(v).trim() !== '' ? String(v).trim() : LB[k]; };
 
   /* ---------- theme ---------- */
@@ -109,11 +109,11 @@
       (app ? phones(all, c, p.title) : src ? '<img loading="lazy" decoding="async" src="' + E(src) + '" alt="' + E(p.title) + '">' : '<div class="ph">' + ic(c.icon) + '</div>') +
       '<span class="cat-b">' + ic(c.icon) + ' ' + E(c.name) + '</span>' +
       '<span class="idx">' + String(i + 1).padStart(2, '0') + '</span>' +
-      (vOf(p) ? '<span class="vd-b">' + ic('play') + ' فيديو</span>' : '') +
+      (vOf(p) ? '<span class="vd-b">' + ic('play') + ' ' + E(T('wkVidBadge')) + '</span>' : '') +
       (!app && c.type !== 'video' && all.length > 1 ? '<span class="cnt">' + ic('layers') + all.length + ' صور</span>' : '') +
       (c.type === 'video' ? '<div class="pl"><span>' + ic('play') + '</span></div>' : '') + '</div>';
     const body = '<div class="cb">' + (p.tag ? '<span class="tg">' + E(p.tag) + '</span>' : '') + '<h3 dir="auto">' + E(p.title) + '</h3>' + (p.desc ? '<p dir="auto">' + E(p.desc) + '</p>' : '') + chips(p) +
-      '<span class="go">' + E(app ? 'شوف تفاصيل التطبيق' : T(c.type === 'video' ? 'cardGoVid' : 'cardGoImg')) + ' ' + ic('arrowL') + '</span></div>';
+      '<span class="go">' + E(app ? T('cardGoApp') : T(c.type === 'video' ? 'cardGoVid' : 'cardGoImg')) + ' ' + ic('arrowL') + '</span></div>';
     return '<a class="card' + (p.featured ? ' feat' : '') + '" style="--i:' + i + ';--c:' + rgbOf(c, Math.max(0, D.categories.findIndex(x => x.id === p.category))) + '" href="works.html#w-' + encodeURIComponent(p.id) + '" aria-label="' + E(p.title) + '">' + media + body + '</a>';
   }
 
@@ -123,15 +123,15 @@
     const ft = (Array.isArray(p.features) ? p.features : []).filter(Boolean).slice(0, 6);
     const lks = (Array.isArray(p.links) ? p.links : []).filter(x => x && x.url && link(x.url) !== '#').slice(0, 2);
     const scr = shots.length ? shots.map((u, k) => '<img class="sc-s' + (k ? '' : ' on') + '" loading="lazy" decoding="async" src="' + E(u) + '" alt="' + E(p.title) + ' — ' + (k + 1) + '">').join('') : '<span class="ps"><b dir="auto">' + E(String(p.title || '').split('|')[0].trim().slice(0, 14)) + '</b><i></i><i></i><i></i></span>';
-    const tabs = vd ? '<div class="sc-tabs" role="group" aria-label="طريقة العرض"><button type="button" data-sct="shots" aria-pressed="true">' + ic('layers') + ' اللقطات</button><button type="button" data-sct="vid" aria-pressed="false">' + ic('play') + ' الفيديو</button></div>' : '';
+    const tabs = vd ? '<div class="sc-tabs" role="group" aria-label="طريقة العرض"><button type="button" data-sct="shots" aria-pressed="true">' + ic('layers') + ' ' + E(T('scShots')) + '</button><button type="button" data-sct="vid" aria-pressed="false">' + ic('play') + ' ' + E(T('scVideo')) + '</button></div>' : '';
     const dots = shots.length > 1 ? '<div class="sc-dots">' + shots.map((u, k) => '<button type="button" data-scs="' + k + '" aria-label="لقطة ' + (k + 1) + '" aria-current="' + (k === 0) + '"></button>').join('') + '</div>' : '';
     return '<article class="sc" style="--c:' + rgbOf(c, Math.max(0, D.categories.findIndex(x => x.id === p.category))) + '">' +
       '<div class="sc-b">' + (p.tag ? '<span class="tg">' + E(p.tag) + '</span>' : '') + (p.status ? '<span class="pj-st">' + E(p.status) + '</span>' : '') +
       '<h3 dir="auto">' + E(p.title) + '</h3>' + (p.desc ? '<p dir="auto">' + E(p.desc) + '</p>' : '') +
       (ft.length ? '<ul class="ft">' + ft.map(x => '<li>' + ic('check') + '<span dir="auto">' + E(x) + '</span></li>').join('') + '</ul>' : '') + chips(p) +
-      '<div class="sc-go"><a class="btn primary" href="' + href + '">' + E('شوف تفاصيل التطبيق') + ' ' + ic('arrowL') + '</a>' +
-      (vd ? '<button type="button" class="btn ghost" data-sct="vid">' + ic('play') + ' شاهد الفيديو</button>' : '') +
-      lks.map(x => '<a class="btn ghost" href="' + E(link(x.url)) + '" target="_blank" rel="noopener noreferrer">' + E(x.label || 'افتح المشروع') + ' ' + ic('ext') + '</a>').join('') + '</div></div>' +
+      '<div class="sc-go"><a class="btn primary" href="' + href + '">' + E(T('cardGoApp')) + ' ' + ic('arrowL') + '</a>' +
+      (vd ? '<button type="button" class="btn ghost" data-sct="vid">' + ic('play') + ' ' + E(T('scWatch')) + '</button>' : '') +
+      lks.map(x => '<a class="btn ghost" href="' + E(link(x.url)) + '" target="_blank" rel="noopener noreferrer">' + E(x.label || T('wkOpenProj')) + ' ' + ic('ext') + '</a>').join('') + '</div></div>' +
       '<div class="media app sc-m"><span class="phs n1"><span class="phn c">' + scr + '</span></span><div class="sc-vid" hidden></div>' + tabs + dots +
       (vd ? '<template class="sc-tpl">' + player(p, shots[0]) + '</template>' : '') + '</div></article>';
   }
@@ -205,7 +205,7 @@
         '</div></section>');
     }
 
-    const pk = (Array.isArray(D.packages) ? D.packages : []).filter(x => x && x.name);
+    const pk = (Array.isArray(D.packages) ? D.packages : []).filter(x => x && x.name && x.visible !== false);
     if (on('pricing') && pk.length) {
       menu.push(['#pricing', T('navPricing')]);
       sections.push('<section class="s" id="pricing"><div class="wrap"><div class="sh ctr rv"><span class="no">' + num() + '</span><h2>' + E(T('pricingTitle')) + '</h2><p>' + E(T('pricingSub')) + '</p></div><div class="pk-car"><button type="button" class="pk-nav pk-r" aria-label="السابق">' + ic('arrowL') + '</button><div class="pks" tabindex="0" role="region" aria-label="' + E(T('pricingTitle')) + '">' +

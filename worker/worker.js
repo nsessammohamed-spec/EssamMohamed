@@ -1,7 +1,7 @@
 /* وسيط آمن (Cloudflare Worker) بين لوحة التحكم و GitHub.
    - التوكن الحقيقي محفوظ هنا كـ Secret ومش بيوصل للمتصفح ولا للريبو أبدًا.
    - كلمة السر بتتراجع هنا (مش في المتصفح) مع حد للمحاولات الغلط.
-   - اللوحة تقدر تقرأ/تكتب data/site.js وصور images/uploads بس. أي مسار تاني مرفوض. */
+   - اللوحة تقدر تقرأ/تكتب data/site.js وصور images/uploads وفيديوهات videos/uploads (mp4/webm) بس. أي مسار تاني مرفوض. */
 const enc = new TextEncoder();
 const SESSION_TTL = 4 * 3600;          // مدة الجلسة (ساعات)
 const IP_MAX_FAILS = 5, IP_LOCK = 900; // 5 محاولات غلط من نفس الجهاز = قفل 15 دقيقة
@@ -75,6 +75,7 @@ function route(method, path, repo) {
   if (method === 'GET' && (path === base || path === base + '/pages' || path === base + '/pages/builds/latest')) return 'read';
   if (path === base + '/contents/data/site.js' && (method === 'GET' || method === 'PUT')) return method === 'GET' ? 'read' : 'site';
   if (method === 'PUT' && /^\/repos\/[^/]+\/[^/]+\/contents\/images\/uploads\/[A-Za-z0-9_-]{4,40}\.(jpg|webp)$/.test(path) && path.startsWith(base + '/contents/')) return 'image';
+  if (method === 'PUT' && /^\/repos\/[^/]+\/[^/]+\/contents\/videos\/uploads\/[A-Za-z0-9_-]{4,40}\.(mp4|webm)$/.test(path) && path.startsWith(base + '/contents/')) return 'video';
   return null;
 }
 function checkBody(kind, b) {
@@ -88,6 +89,7 @@ function checkBody(kind, b) {
       return o && Array.isArray(o.projects);                  // مجرد بيانات — مفيش كود يتنفذ
     }
     const head = atob(b.content.slice(0, 16));
+    if (kind === 'video') return head.slice(4, 8) === 'ftyp' || (head.charCodeAt(0) === 0x1A && head.charCodeAt(1) === 0x45 && head.charCodeAt(2) === 0xDF && head.charCodeAt(3) === 0xA3);   // mp4 / webm حقيقي بس
     const jpg = head.charCodeAt(0) === 0xFF && head.charCodeAt(1) === 0xD8 && head.charCodeAt(2) === 0xFF;
     const webp = head.slice(0, 4) === 'RIFF' && head.slice(8, 12) === 'WEBP';
     return jpg || webp;                                       // صور حقيقية بس

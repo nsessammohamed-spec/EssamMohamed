@@ -13,8 +13,10 @@
     if (!a.length) { const s = img(p.image); if (s) a = [s]; }
     return a;
   };
+  const LBW = { wkEyebrow: 'معرض الأعمال', wkTitle: 'أعمالي', wkSub: 'كل شغلي في مكان واحد. اختار القسم، واضغط على أي عمل تشوفه بالحجم الكامل.', wkNavHome: 'الرئيسية', wkNavWorks: 'الأعمال', wkNavContact: 'تواصل', wkGoImg: 'شوف العمل', wkGoGal: 'تصفّح الصور', wkGoVid: 'شاهد', wkGoApp: 'تفاصيل التطبيق', wkEmpty: 'لسه مفيش أعمال في القسم ده.', wkOpenOrig: 'افتح المشروع الأصلي', wkPlayVid: 'شغّل الفيديو', wkOpenLink: 'افتح الرابط', wkOpenProj: 'افتح المشروع', wkSeeShots: 'شوف اللقطات', wkWatchApp: 'شاهد فيديو التطبيق', wkVidBadge: 'فيديو', filterAll: 'الكل' };
+  const T = k => { const v = D && D.labels && D.labels[k]; return v != null && String(v).trim() !== '' ? String(v).trim() : LBW[k]; };
   let D = null, cur = 'all', view = 'grid', io = null;
-  let vw = null, vwList = [], vwCur = null, vwI = 0, vwSheet = false, vwPush = false, vwFocus = null, zoomed = false, swiped = false;
+  let vw = null, vwList = [], vwCur = null, vwI = 0, vwSheet = false, vwPush = false, vwFocus = null, zoomed = false, swiped = false, vwVid = false;
   try { const v = localStorage.getItem('sx.wview'); if (v === 'grid' || v === 'big') view = v; } catch (e) {}
 
   /* ---------- theme (نفس منطق الصفحة الرئيسية) ---------- */
@@ -79,6 +81,9 @@
     return '<span class="phs n' + Math.max(1, pics.length) + '">' + (pics.length ? order.map((u, i) => '<span class="phn ' + cls[i] + '"><img loading="lazy" decoding="async" src="' + E(u) + '" alt="' + E(title) + '"></span>').join('') : '<span class="phn c"><span class="ps"><b dir="auto">' + E(String(title || '').split('|')[0].trim().slice(0, 14)) + '</b><i></i><i></i><i></i></span></span>') + '</span>';
   };
   const chips = p => Array.isArray(p.tools) && p.tools.length ? '<ul class="tl" aria-label="الأدوات">' + p.tools.slice(0, 5).map(t => '<li>' + E(t) + '</li>').join('') + '</ul>' : '';
+  /* فيديو العمل: يوتيوب / فيميو / ملف mp4 */
+  const vOf = p => { const u = String((p && p.video) || '').trim(); if (!u) return null; let m = /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/.exec(u); if (m) return { e: 'https://www.youtube-nocookie.com/embed/' + m[1] + '?rel=0' }; m = /vimeo\.com\/(?:video\/)?(\d+)/.exec(u); if (m) return { e: 'https://player.vimeo.com/video/' + m[1] }; return /^(https?:\/\/|videos\/|blob:)/i.test(u) ? { f: u } : null; };
+  const player = (p, poster) => { const v = vOf(p); if (!v) return ''; return v.e ? '<iframe src="' + E(v.e) + '" title="' + E(p.title) + '" loading="lazy" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe>' : '<video src="' + E(v.f) + '" controls playsinline preload="metadata"' + (poster ? ' poster="' + E(poster) + '"' : '') + '></video>'; };
 
   function tile(p, i) {
     const c = catOf(p.category), all = imgsOf(p), src = all[0], n = all.length;
@@ -86,10 +91,11 @@
     return '<button type="button" class="wk-t' + (app ? ' is-app' : '') + '" data-w="' + E(p.id) + '" aria-label="' + E(p.title) + (n > 1 ? ' — ' + n + ' صور' : '') + '">' +
       '<span class="wk-m' + (app ? ' app' : '') + '">' + (app ? phones(all, c, p.title) : src ? '<img loading="lazy" decoding="async" src="' + E(src) + '" alt="' + E(p.title) + '">' : '<span class="ph">' + ic(c.icon) + '</span>') +
       (c.type === 'video' ? '<span class="pl"><span>' + ic('play') + '</span></span>' : '') +
+      (vOf(p) ? '<span class="vd-b">' + ic('play') + ' ' + E(T('wkVidBadge')) + '</span>' : '') +
       (!app && c.type !== 'video' && n > 1 ? '<span class="wk-k">' + ic('layers') + '<b>' + n + '</b> صور</span>' : '') + '</span>' +
       '<span class="wk-n">' + pad(i + 1) + '</span>' +
       '<span class="wk-o">' + (p.tag ? '<span class="tg">' + E(p.tag) + '</span>' : '') + '<strong dir="auto">' + E(p.title) + '</strong>' +
-      (p.desc ? '<small>' + E(p.desc) + '</small>' : '') + chips(p) + '<em>' + (app ? 'تفاصيل التطبيق' : c.type === 'video' ? 'شاهد' : n > 1 ? 'تصفّح الصور' : 'شوف العمل') + ' ' + ic('arrowL') + '</em></span></button>';
+      (p.desc ? '<small>' + E(p.desc) + '</small>' : '') + chips(p) + '<em>' + E(app ? T('wkGoApp') : c.type === 'video' ? T('wkGoVid') : n > 1 ? T('wkGoGal') : T('wkGoImg')) + ' ' + ic('arrowL') + '</em></span></button>';
   }
   function fit(im) {
     if (!im || !im.naturalWidth) return;
@@ -111,7 +117,7 @@
     const g = d.getElementById('wg'); if (!g) return;
     const L = list();
     g.dataset.view = view;
-    g.innerHTML = L.length ? L.map(tile).join('') : '<div class="empty">لسه مفيش أعمال في القسم ده.</div>';
+    g.innerHTML = L.length ? L.map(tile).join('') : '<div class="empty">' + E(T('wkEmpty')) + '</div>';
     g.querySelectorAll('.wk-m img').forEach(fit);
     observe();
   }
@@ -140,18 +146,18 @@
     if (cur !== 'all' && !cats.some(c => c.id === cur)) cur = 'all';
     const name = H.name || '';
     const nav = '<header class="nav" id="nav"><div class="wrap nav-in"><a class="brand" href="index.html" aria-label="الرئيسية"><b>' + E((name || 'ع').trim().charAt(0)) + '</b><span>' + E(name) + '</span></a>' +
-      '<nav class="menu" id="menu" aria-label="القائمة"><a href="index.html">الرئيسية</a><a href="#top" class="on">الأعمال</a><a href="index.html#contact">تواصل</a></nav>' +
+      '<nav class="menu" id="menu" aria-label="القائمة"><a href="index.html">' + E(T('wkNavHome')) + '</a><a href="#top" class="on">' + E(T('wkNavWorks')) + '</a><a href="index.html#contact">' + E(T('wkNavContact')) + '</a></nav>' +
       (D.theme.toggle === false ? '' : '<button type="button" class="ib" data-act="mode" aria-label="تبديل الوضع الليلي/النهاري">' + ic(root.dataset.mode === 'light' ? 'moon' : 'sun') + '</button>') +
       '<button type="button" class="ib burger" data-act="menu" aria-label="القائمة" aria-expanded="false">' + ic('menu') + '</button></div></header>';
-    const hero = '<section class="wk-hero" id="top"><div class="wrap"><p class="eyebrow wa" style="--d:.05s">معرض الأعمال</p>' +
-      '<h1 class="wk-h wa" style="--d:.12s"><span class="g">أعمالي</span><b class="wk-c" aria-label="' + P.length + ' عمل">' + pad(P.length) + '</b></h1>' +
-      '<p class="wk-s wa" style="--d:.2s">كل شغلي في مكان واحد. اختار القسم، واضغط على أي عمل تشوفه بالحجم الكامل.</p></div></section>';
+    const hero = '<section class="wk-hero" id="top"><div class="wrap"><p class="eyebrow wa" style="--d:.05s">' + E(T('wkEyebrow')) + '</p>' +
+      '<h1 class="wk-h wa" style="--d:.12s"><span class="g">' + E(T('wkTitle')) + '</span><b class="wk-c" aria-label="' + P.length + ' عمل">' + pad(P.length) + '</b></h1>' +
+      '<p class="wk-s wa" style="--d:.2s">' + E(T('wkSub')) + '</p></div></section>';
     const bar = P.length ? '<div class="wk-bar"><div class="wrap wk-bar-in">' +
-      (cats.length > 1 ? '<div class="wk-f" id="fl" role="group" aria-label="فلترة الأعمال"><span class="fi" id="fi"></span><button type="button" data-f="all" aria-pressed="' + (cur === 'all') + '">الكل <small>' + P.length + '</small></button>' +
+      (cats.length > 1 ? '<div class="wk-f" id="fl" role="group" aria-label="فلترة الأعمال"><span class="fi" id="fi"></span><button type="button" data-f="all" aria-pressed="' + (cur === 'all') + '">' + E(T('filterAll')) + ' <small>' + P.length + '</small></button>' +
         cats.map(c => '<button type="button" data-f="' + E(c.id) + '" aria-pressed="' + (cur === c.id) + '">' + E(c.name) + ' <small>' + P.filter(p => p.category === c.id).length + '</small></button>').join('') + '</div>' : '<span></span>') +
       '<div class="wk-v" role="group" aria-label="طريقة العرض"><button type="button" data-v="grid" aria-pressed="' + (view === 'grid') + '" aria-label="عرض شبكة" title="شبكة">' + ic('grid') + '</button><button type="button" data-v="big" aria-label="عرض كبير" title="عرض كبير">' + ic('monitor') + '</button></div></div></div>' : '';
     const grid = '<section class="wk-sec"><div class="wrap"><div class="wk-grid" id="wg" data-view="' + view + '"></div></div></section>';
-    const foot = '<footer class="f"><div class="wrap"><span>' + E(D.footer || '') + '</span><a class="up" href="index.html">الرئيسية ' + ic('arrowL') + '</a></div></footer>';
+    const foot = '<footer class="f"><div class="wrap"><span>' + E(D.footer || '') + '</span><a class="up" href="index.html">' + E(T('wkNavHome')) + ' ' + ic('arrowL') + '</a></div></footer>';
     app.innerHTML = nav + '<main id="main">' + hero + bar + grid + '</main>' + foot;
     const vb = d.querySelector('[data-v="big"]'); if (vb) vb.setAttribute('aria-pressed', String(view === 'big'));
     paint(); moveInd(false); onScroll();
@@ -165,18 +171,18 @@
   function parts(p, i, n) {
     const c = catOf(p.category), href = link(p.link), em = c.type === 'video' ? embed(href) : '';
     const pics = em ? [] : imgsOf(p), k = Math.min(vwI, Math.max(0, pics.length - 1)), src = pics[k];
-    const fig = em ? '<div class="vw-v"><iframe src="' + E(em) + '" title="' + E(p.title) + '" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe></div>'
+    const vd = vOf(p), vApp = isApp(p, c) && vd && vwVid, fig = vApp ? '<div class="vw-v' + (vd.f ? ' file' : '') + '">' + player(p, imgsOf(p)[0]) + '</div>' : em ? '<div class="vw-v"><iframe src="' + E(em) + '" title="' + E(p.title) + '" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe></div>'
       : src ? '<img src="' + E(src) + '" alt="' + E(p.title) + (pics.length > 1 ? ' — ' + (k + 1) : '') + '" draggable="false">' : '<div class="vw-ph">' + ic(c.icon) + '</div>';
     const app = isApp(p, c), lks = (Array.isArray(p.links) ? p.links : []).filter(x => x && x.url && link(x.url) !== '#');
     const ft = (Array.isArray(p.features) ? p.features : []).filter(Boolean);
-    const appGo = app ? (lks.length ? lks : (href !== '#' ? [{ label: 'افتح المشروع', url: href }] : [])).map((x, j) => '<a class="btn' + (j ? '' : ' primary') + ' vw-go" href="' + E(link(x.url)) + '" target="_blank" rel="noopener noreferrer">' + E(x.label || 'افتح الرابط') + ' ' + ic('ext') + '</a>').join('') : '';
-    const go = app ? appGo : (c.type === 'video' && !em && href !== '#') ? '<a class="btn primary vw-go" href="' + E(href) + '" target="_blank" rel="noopener noreferrer">شغّل الفيديو ' + ic('ext') + '</a>'
-      : (c.type !== 'video' && href !== '#') ? '<a class="btn vw-go" href="' + E(href) + '" target="_blank" rel="noopener noreferrer">افتح المشروع الأصلي ' + ic('ext') + '</a>' : '';
+    const appGo = app ? (lks.length ? lks : (href !== '#' ? [{ label: T('wkOpenProj'), url: href }] : [])).map((x, j) => '<a class="btn' + (j ? '' : ' primary') + ' vw-go" href="' + E(link(x.url)) + '" target="_blank" rel="noopener noreferrer">' + E(x.label || T('wkOpenLink')) + ' ' + ic('ext') + '</a>').join('') : '';
+    const go = app ? appGo : (c.type === 'video' && !em && href !== '#') ? '<a class="btn primary vw-go" href="' + E(href) + '" target="_blank" rel="noopener noreferrer">' + E(T('wkPlayVid')) + ' ' + ic('ext') + '</a>'
+      : (c.type !== 'video' && href !== '#') ? '<a class="btn vw-go" href="' + E(href) + '" target="_blank" rel="noopener noreferrer">' + E(T('wkOpenOrig')) + ' ' + ic('ext') + '</a>' : '';
     return {
       cnt: pad(i + 1) + ' / ' + pad(n),
       cat: ic(c.icon) + ' ' + E(c.name),
-      fig: fig, emb: !!em, pics: pics, k: k,
-      info: (p.tag ? '<span class="tg">' + E(p.tag) + '</span>' : '') + '<h2 dir="auto">' + E(p.title) + '</h2>' + (p.status ? '<span class="pj-st">' + E(p.status) + '</span>' : '') + (p.desc ? '<p>' + E(p.desc) + '</p>' : '') + (app ? chips(p) : '') + (app && ft.length ? '<ul class="ft">' + ft.map(f => '<li>' + ic('check') + '<span dir="auto">' + E(f) + '</span></li>').join('') + '</ul>' : '') + go
+      fig: fig, emb: !!em || !!vApp, pics: pics, k: k,
+      info: (p.tag ? '<span class="tg">' + E(p.tag) + '</span>' : '') + '<h2 dir="auto">' + E(p.title) + '</h2>' + (p.status ? '<span class="pj-st">' + E(p.status) + '</span>' : '') + (p.desc ? '<p>' + E(p.desc) + '</p>' : '') + (app ? chips(p) : '') + (app && ft.length ? '<ul class="ft">' + ft.map(f => '<li>' + ic('check') + '<span dir="auto">' + E(f) + '</span></li>').join('') + '</ul>' : '') + (app && vd ? '<button type="button" class="btn ghost vw-vt" data-vvid>' + ic('play') + ' ' + E(vwVid ? T('wkSeeShots') : T('wkWatchApp')) + '</button>' : '') + go
     };
   }
   function vwOpen(id, k) {
@@ -185,7 +191,7 @@
     if (i < 0) return;
     const same = !!vw && id === vwCur;
     vwList = L; vwCur = id; zoomed = false;
-    if (!same) { vwI = k || 0; vwSheet = false; } else if (k != null) vwI = k;
+    if (!same) { vwI = k || 0; vwSheet = false; vwVid = false; } else if (k != null) vwI = k;
     if (!vw) {
       vw = d.createElement('div'); vw.className = 'vw'; vw.setAttribute('role', 'dialog'); vw.setAttribute('aria-modal', 'true');
       vw.innerHTML = '<div class="vw-top"><span class="vw-cnt" title="ترتيب العمل"></span><span class="vw-cat"></span><span class="vw-pg"></span>' +
@@ -236,9 +242,9 @@
     if (!vw) return;
     const p = vwList.find(q => q.id === vwCur), np = p ? imgsOf(p).length : 0;
     if (np < 2) return;
-    vwI = (vwI + dir + np) % np; vwSheet = false; vwUpdate();
+    vwI = (vwI + dir + np) % np; vwSheet = false; vwVid = false; vwUpdate();
   }
-  function vwGo(k) { vwI = k; vwSheet = false; vwUpdate(); }
+  function vwGo(k) { vwI = k; vwSheet = false; vwVid = false; vwUpdate(); }
   /* تنقل بين الأعمال */
   function vwStep(dir) {
     if (!vw || vwList.length < 2) return;
@@ -247,7 +253,7 @@
   }
   function vwClose(fromPop) {
     if (!vw) return;
-    vw.remove(); vw = null; zoomed = false; vwCur = null; vwI = 0; vwSheet = false; root.classList.remove('vwo'); app.inert = false;
+    vw.remove(); vw = null; zoomed = false; vwCur = null; vwI = 0; vwSheet = false; vwVid = false; root.classList.remove('vwo'); app.inert = false;
     if (!fromPop) {
       if (vwPush) { try { history.back(); } catch (e) {} }
       else if (/^#w-/.test(location.hash)) { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
@@ -318,6 +324,7 @@
     const vn = t.closest('[data-vn]'); if (vn) { vwImg(+vn.dataset.vn); return; }
     const vk = t.closest('[data-vw]'); if (vk) { vwStep(+vk.dataset.vw); return; }
     const vh = t.closest('[data-vsheet]'); if (vh) { vwSheet = !vwSheet; vwUpdate(); return; }
+    const vv = t.closest('[data-vvid]'); if (vv) { vwVid = !vwVid; vwUpdate(); return; }
     const vj = t.closest('[data-vj],[data-vs]'); if (vj) { vwGo(+(vj.dataset.vj != null ? vj.dataset.vj : vj.dataset.vs)); return; }
     const zi = t.closest('.vw-fig img'); if (zi) { zoomAt(e, zi); return; }
     if (vw && !t.closest('.vw-fig,.vw-sheet,.vw-nav,.vw-top,.vw-bot')) { vwClose(); return; }
@@ -336,7 +343,7 @@
     D = norm(data);
     theme();
     const nm = D.hero.name || '';
-    d.title = 'أعمالي' + (nm ? ' | ' + nm : '');
+    d.title = (D.seo && D.seo.worksTitle) || (T('wkTitle') + (nm ? ' | ' + nm : ''));
     const c = /^#c-(.+)$/.exec(location.hash); if (c) cur = decodeURIComponent(c[1]);
     build();
     const w = /^#w-(.+)$/.exec(location.hash); if (w) vwOpen(decodeURIComponent(w[1]));

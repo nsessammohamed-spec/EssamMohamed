@@ -21,6 +21,7 @@ if (site && !/^https:\/\/[^\s]+$/.test(site)) throw new Error('SITE_URL لازم
 const ctx = { window: {} };
 vm.runInNewContext(rd('data/site.js'), ctx);
 const D = ctx.window.SITE;
+const Q = D.seo || {};   // إعدادات SEO من لوحة التحكم (بتغلّب على tools/seo.config.json)
 
 const E = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const abs = u => !u ? '' : /^https?:/i.test(u) ? u : site ? site + u.replace(/^\.?\//, '') : '';
@@ -28,7 +29,8 @@ const safeUrl = u => /^(https?:\/\/|mailto:|tel:|#)/i.test(u || '') ? u : '#';
 
 const title = D.meta?.title || D.hero?.name;
 const desc = D.meta?.description || D.hero?.sub || '';
-const ogImg = abs(cfg.OG_IMAGE || D.hero?.photo);
+const ogImg = abs(Q.ogImage || cfg.OG_IMAGE || D.hero?.photo);
+const JOB = Q.jobTitle || cfg.JOB_TITLE, CITY = Q.city || cfg.CITY, COUNTRY = Q.country || cfg.COUNTRY;
 const visible = (D.projects || []).filter(p => p.visible !== false);
 const workLi = p => {
   const u = safeUrl(p.link);
@@ -41,10 +43,10 @@ const catName = id => (D.categories || []).find(c => c.id === id)?.name || '';
 const sameAs = (D.contact?.socials || []).map(s => s.url).filter(u => /^https:/.test(u));
 const person = {
   '@context': 'https://schema.org', '@type': 'Person',
-  name: D.hero?.name, description: desc, jobTitle: cfg.JOB_TITLE,
+  name: D.hero?.name, description: desc, jobTitle: JOB,
   ...(site && { url: site }), ...(abs(D.hero?.photo) && { image: abs(D.hero.photo) }),
   ...(D.contact?.email && { email: D.contact.email }),
-  ...(cfg.CITY && { address: { '@type': 'PostalAddress', addressLocality: cfg.CITY, addressCountry: cfg.COUNTRY } }),
+  ...(CITY && { address: { '@type': 'PostalAddress', addressLocality: CITY, addressCountry: COUNTRY } }),
   knowsAbout: D.skills, sameAs
 };
 const faq = (D.faq || []).length ? {
@@ -54,6 +56,11 @@ const faq = (D.faq || []).length ? {
 const ld = o => '<script type="application/ld+json">' + JSON.stringify(o).replace(/</g, '\\u003c') + '</script>';
 
 const head = [
+  '<title>' + E(title) + '</title>',
+  '<meta name="description" content="' + E(desc) + '">',
+  '<meta property="og:type" content="website">',
+  '<meta property="og:title" content="' + E(title) + '">',
+  '<meta property="og:description" content="' + E(desc) + '">',
   '<meta name="sx-mode" content="' + E(['light', 'auto'].includes(D.theme?.mode) ? D.theme.mode : 'dark') + '">',
   '<meta name="robots" content="index,follow,max-image-preview:large">',
   '<meta name="author" content="' + E(D.hero?.name) + '">',
@@ -78,6 +85,8 @@ const body = [
   (D.skills || []).length && '<section><h2>الأدوات والمهارات</h2><ul>' + D.skills.map(s => '<li>' + E(s) + '</li>').join('') + '</ul></section>',
   (D.categories || []).length && '<section><h2>المجالات</h2><ul>' + D.categories.map(c => '<li><strong>' + E(c.name) + '</strong>: ' + E(c.desc) + '</li>').join('') + '</ul></section>',
   visible.length && '<section><h2>أعمالي</h2><ul>' + visible.map(workLi).join('') + '</ul><p><a href="works.html">كل الأعمال</a></p></section>',
+  (D.packages || []).filter(k => k.name && k.visible !== false).length && '<section><h2>الباقات والخدمات</h2><ul>' + D.packages.filter(k => k.name && k.visible !== false).map(k => '<li><strong>' + E(k.name) + '</strong>' + (k.desc ? ': ' + E(k.desc) : '') + '</li>').join('') + '</ul></section>',
+  (D.why || []).filter(w => w.t).length && '<section><h2>ليه تشتغل معايا؟</h2><ul>' + D.why.filter(w => w.t).map(w => '<li><strong>' + E(w.t) + '</strong>' + (w.d ? ': ' + E(w.d) : '') + '</li>').join('') + '</ul></section>',
   (D.faq || []).length && '<section><h2>أسئلة شائعة</h2>' + D.faq.map(f => '<h3>' + E(f.q) + '</h3><p>' + E(f.a) + '</p>').join('') + '</section>',
   '<section><h2>' + E(D.contact?.title || 'تواصل') + '</h2><p>' + E(D.contact?.text) + '</p><ul>' +
     (D.contact?.email ? '<li><a href="mailto:' + E(D.contact.email) + '">' + E(D.contact.email) + '</a></li>' : '') +
@@ -99,8 +108,8 @@ wr('index.html', h2);
 
 /* ---------- 2b) works.html ---------- */
 if (fs.existsSync(path.join(root, 'works.html'))) {
-  const wTitle = 'أعمالي | ' + (D.hero?.name || '');
-  const wDesc = 'معرض أعمال ' + (D.hero?.name || '') + ': تصميم جرافيك، برمجة، فيديوهات السبورة البيضاء ومونتاج.';
+  const wTitle = Q.worksTitle || ((D.labels?.wkTitle || 'أعمالي') + ' | ' + (D.hero?.name || ''));
+  const wDesc = Q.worksDesc || ('معرض أعمال ' + (D.hero?.name || '') + ': ' + (D.categories || []).map(c => c.name).filter(Boolean).join('، ') + '.');
   const wUrl = site ? site + 'works.html' : '';
   const itemList = {
     '@context': 'https://schema.org', '@type': 'CollectionPage', name: wTitle, description: wDesc,
@@ -116,6 +125,15 @@ if (fs.existsSync(path.join(root, 'works.html'))) {
       { '@type': 'ListItem', position: 2, name: 'أعمالي', item: wUrl }]
   } : null;
   const wHead = [
+    '<title>' + E(wTitle) + '</title>',
+    '<meta name="description" content="' + E(wDesc) + '">',
+    '<meta property="og:type" content="website">',
+    '<meta property="og:title" content="' + E(wTitle) + '">',
+    '<meta property="og:description" content="' + E(wDesc) + '">',
+    '<meta property="og:locale" content="ar_AR">',
+    wUrl && '<link rel="canonical" href="' + E(wUrl) + '">',
+    wUrl && '<meta property="og:url" content="' + E(wUrl) + '">',
+    ogImg && '<meta property="og:image" content="' + E(ogImg) + '">',
     '<meta name="sx-mode" content="' + E(['light', 'auto'].includes(D.theme?.mode) ? D.theme.mode : 'dark') + '">',
     '<meta name="robots" content="index,follow,max-image-preview:large">',
     '<meta name="author" content="' + E(D.hero?.name) + '">',
