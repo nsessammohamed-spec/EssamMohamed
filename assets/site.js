@@ -8,6 +8,7 @@
   const img = u => { u = String(u || '').trim(); return /^(https?:\/\/|data:image\/|images\/|assets\/)/i.test(u) ? u : ''; };
   const imgsOf = p => { let a = Array.isArray(p.images) ? p.images.map(img).filter(Boolean) : []; if (!a.length) { const s = img(p.image); if (s) a = [s]; } return a; };
   const ext = u => /^https?:/i.test(u);
+  const ar = s => String(s == null ? '' : s).replace(/(^|[\s(،])و(?=[A-Za-z])/g, '$1و ');
   const PREVIEW = /[?&]preview=1/.test(location.search) && window.parent !== window;
   let D = null, cur = 'all', io = null;
 
@@ -101,40 +102,53 @@
     const mine = (Array.isArray(A.photos) ? A.photos : []).map(img).filter(Boolean);
     if (A.text || skills.length || mine.length) {
       menu.push(['#about', 'عني']);
-      sections.push('<section class="s" id="about"><div class="wrap"><div class="sh rv"><span class="no">' + num() + '</span><h2>' + E(A.title || 'نبذة عني') + '</h2></div><div class="about"><p class="tx rv">' + E(A.text) + '</p>' +
-        (skills.length ? '<div class="skills rv"><h3>الأدوات والمهارات</h3>' + skills.map(s => '<span class="sk">' + E(s) + '</span>').join('') + '</div>' : '') + '</div>' +
-        (mine.length ? '<div class="mine rv"><h3>' + E(A.photosTitle || 'لقطات مني') + '</h3><div class="mine-g">' + mine.map((u, i) => '<button type="button" class="mine-i" data-lb="' + E(u) + '" aria-label="تكبير الصورة ' + (i + 1) + '"><img loading="lazy" decoding="async" src="' + E(u) + '" alt="' + E(H.name) + ' — صورة ' + (i + 1) + '"></button>').join('') + '</div></div>' : '') +
-        '</div></section>');
+      const facts = (Array.isArray(A.facts) ? A.facts : []).filter(f => f && f.label && f.value);
+      if (D.categories.length) facts.push({ label: 'التخصصات', value: D.categories.map(c => c.name).join('، ') });
+      sections.push('<section class="s" id="about"><div class="wrap"><div class="ab">' +
+        '<div class="ab-tx"><div class="sh rv"><h2>' + E(A.title || 'نبذة عني') + '</h2></div>' +
+        '<p class="tx rv">' + E(ar(A.text)) + '</p>' +
+        (facts.length ? '<dl class="facts rv">' + facts.map(f => '<div><dt>' + E(f.label) + '</dt><dd>' + E(ar(f.value)) + '</dd></div>').join('') + '</dl>' : '') +
+        (skills.length ? '<div class="skills rv"><h3>الأدوات اللي بشتغل بيها</h3>' + skills.map(s => '<span class="sk">' + E(s) + '</span>').join('') + '</div>' : '') +
+        '<div class="cta rv"><a class="btn primary" href="#contact">كلمني ' + ic('arrowL') + '</a><a class="btn ghost" href="works.html">كل أعمالي</a></div></div>' +
+        (mine.length ? '<div class="mine rv"><div class="mine-g n' + Math.min(mine.length, 5) + '">' + mine.slice(0, 5).map((u, i) => '<button type="button" class="mine-i" data-lb="' + E(u) + '" aria-label="تكبير الصورة ' + (i + 1) + '"><img loading="lazy" decoding="async" src="' + E(u) + '" alt="' + E(H.name) + ' — صورة ' + (i + 1) + '"></button>').join('') + '</div></div>' : '') +
+        '</div></div></section>');
     }
 
     const wa = String(C.whatsapp || '').replace(/\D/g, '');
     if (C.email || wa || C.socials.length) {
       menu.push(['#contact', 'تواصل']);
-      sections.push('<section class="s" id="contact"><div class="wrap"><div class="cx rv"><h2>' + E(C.title || 'تواصل معايا') + '</h2>' + (C.text ? '<p>' + E(C.text) + '</p>' : '') +
+      sections.push('<section class="s" id="contact"><div class="wrap"><div class="cx rv"><h2>' + E(C.title || 'تواصل معايا') + '</h2>' + (C.text ? '<p>' + E(ar(C.text)) + '</p>' : '') +
         (C.email ? '<a class="mail" href="mailto:' + E(C.email) + '">' + E(C.email) + '</a>' : '') +
         (wa ? '<div class="cta"><a class="btn primary" href="https://wa.me/' + wa + '" target="_blank" rel="noopener noreferrer">كلمني على واتساب ' + ic('arrowL') + '</a></div>' : '') +
         (C.socials.length ? '<div class="soc">' + C.socials.filter(s => s && s.url).map(s => '<a href="' + E(link(s.url)) + '" target="_blank" rel="noopener noreferrer">' + E(s.name || s.url) + ' ' + ic('ext') + '</a>').join('') + '</div>' : '') +
         '</div></div></section>');
     }
 
+    const mord = ['#work', '#services', '#about', '#contact']; menu.sort((x, y) => mord.indexOf(x[0]) - mord.indexOf(y[0]));
     const nav = '<header class="nav" id="nav"><div class="wrap nav-in"><a class="brand" href="#top" aria-label="الرئيسية"><b>' + E((H.name || 'ع').trim().charAt(0)) + '</b><span>' + E(H.name) + '</span></a>' +
       '<nav class="menu" id="menu" aria-label="القائمة">' + menu.map(m => '<a href="' + m[0] + '">' + m[1] + '</a>').join('') + '</nav>' +
       (D.theme.toggle === false ? '' : '<button type="button" class="ib" data-act="mode" aria-label="تبديل الوضع الليلي/النهاري">' + ic(root.dataset.mode === 'light' ? 'moon' : 'sun') + '</button>') +
       '<button type="button" class="ib burger" data-act="menu" aria-label="القائمة" aria-expanded="false">' + ic('menu') + '</button></div></header>';
 
-    const chips = skills.slice(0, 3).map(s => '<span class="chip">' + E(s) + '</span>').join('');
     const photo = img(H.photo), ps = ['card', 'arch', 'round'].indexOf(H.photoStyle) > -1 ? H.photoStyle : 'card';
-    const hero = '<section class="hero" id="top"><div class="wrap hero-in"><div>' +
-      (H.eyebrow ? '<p class="eyebrow rv">' + E(H.eyebrow) + '</p>' : '') +
-      '<h1 class="name rv" style="--d:.08s" aria-label="' + E(H.name) + '"><span class="n1">' + E(n1) + '</span>' + (n2 ? ' <span class="n2">' + E(n2) + '</span>' : '') + '</h1>' +
-      (H.sub ? '<p class="sub rv" style="--d:.16s">' + E(H.sub) + '</p>' : '') +
+    /* الاسم في سطر واحد، وتحته خط بالقلم بيترسم (روح السبورة البيضاء) */
+    const l1 = String(H.name || '').trim(), l2 = '';
+    const pen = '<svg class="pen" viewBox="0 0 400 30" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M3 17C52 8 96 22 150 14S262 8 330 15 384 13 397 11"/><path pathLength="1" d="M58 26C128 20 214 27 302 21"/></svg>';
+    const nameHtml = l2 ? '<span class="nl">' + E(l1) + '</span><span class="nl">' + E(l2) + pen + '</span>' : '<span class="nl">' + E(l1) + pen + '</span>';
+    const eyebrow = E(H.eyebrow).replace(/\s*[·•|]\s*/g, '، ');
+    const fx = [[P.length, 'أعمال'], [D.categories.length, 'مجالات'], [skills.length, 'أدوات']].filter(x => x[0] > 0);
+    const facts = fx.length ? '<div class="hero-facts rv" style="--d:.34s">' + fx.map(x => '<div><b>' + x[0] + '</b><span>' + x[1] + '</span></div>').join('') + '</div>' : '';
+    const hero = '<section class="hero" id="top"><div class="wrap hero-in"><div class="hero-tx">' +
+      (H.eyebrow ? '<p class="eyebrow rv">' + eyebrow + '</p>' : '') +
+      '<h1 class="name rv" style="--d:.08s" aria-label="' + E(H.name) + '">' + nameHtml + '</h1>' +
+      (H.sub ? '<p class="sub rv" style="--d:.16s">' + E(ar(H.sub)) + '</p>' : '') +
       '<div class="cta rv" style="--d:.24s">' +
       (H.cta1Text ? '<a class="btn primary" href="' + E(link(H.cta1Link)) + '">' + E(H.cta1Text) + ' ' + ic('arrowL') + '</a>' : '') +
       (H.cta2Text ? '<a class="btn ghost" href="' + E(link(H.cta2Link)) + '">' + E(H.cta2Text) + '</a>' : '') + '</div>' +
       (H.available && H.availableText ? '<p class="avail rv" style="--d:.3s"><span class="pulse"></span>' + E(H.availableText) + '</p>' : '') +
       '</div><figure class="hero-ph rv" data-ps="' + ps + '" style="--d:.2s"><div class="arch"' + (photo ? ' data-lb="' + E(photo) + '" title="تكبير الصورة"' : '') + '>' +
       (photo ? '<img src="' + E(photo) + '" alt="' + E(H.name) + '" fetchpriority="high" decoding="async">' : '<div class="mono" aria-hidden="true">' + E((H.name || 'ع').trim().charAt(0)) + '</div>') +
-      '</div><i class="cr c1"></i><i class="cr c2"></i><i class="cr c3"></i><i class="cr c4"></i>' + chips + '</figure></div></section>';
+      '</div></figure>' + facts + '</div></section>';
 
     let base = []; while (skills.length && base.length < 8) base = base.concat(skills);
     const mk = k => base.map(s => '<span' + (k ? ' class="dup"' : '') + '>' + E(s) + '</span><i' + (k ? ' class="dup"' : '') + '></i>').join('');
@@ -142,7 +156,9 @@
 
     const foot = '<footer class="f"><div class="wrap"><span>' + E(D.footer || '') + '</span><a class="up" href="#top">للأعلى ' + ic('arrowUp') + '</a></div></footer>';
 
-    app.innerHTML = nav + '<main id="main">' + hero + marq + sections.join('') + '</main>' + foot;
+    const ord = ['work', 'services', 'about', 'contact'], idOf = h => { const m = /id="(\w+)"/.exec(h); return m ? ord.indexOf(m[1]) : -1; };
+    sections.sort((x, y) => idOf(x) - idOf(y));
+    app.innerHTML = nav + '<main id="main">' + hero + sections.join('') + '</main>' + foot;
     onScroll(); reveal();
   }
 

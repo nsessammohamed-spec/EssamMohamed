@@ -38,7 +38,11 @@ window.SITE={
    "images/me/p4.webp",
    "images/me/p5.webp"
   ],
-  "photosTitle": "لقطات مني"
+  "photosTitle": "لقطات مني",
+  "facts": [
+   { "label": "من", "value": "القاهرة" },
+   { "label": "الحالة", "value": "متاح للعمل الحر والدوام الكامل" }
+  ]
  },
  "categories": [
   {
