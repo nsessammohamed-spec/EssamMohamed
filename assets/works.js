@@ -61,19 +61,30 @@
   }
 
   /* ---------- tiles ---------- */
+
+  /* ---------- عرض التطبيقات: موكب موبايل بلقطات الشاشة ---------- */
+  const isApp = (p, c) => !!(p && p.layout === 'app') || !!(c && c.layout === 'app');
+  const phones = (all, c, title) => {
+    const pics = all.slice(0, 3), cls = pics.length === 1 ? ['c'] : pics.length === 2 ? ['l', 'r'] : ['l', 'c', 'r'];
+    const order = pics.length === 3 ? [pics[1], pics[0], pics[2]] : pics;
+    return '<span class="phs n' + Math.max(1, pics.length) + '">' + (pics.length ? order.map((u, i) => '<span class="phn ' + cls[i] + '"><img loading="lazy" decoding="async" src="' + E(u) + '" alt="' + E(title) + '"></span>').join('') : '<span class="phn c"><span class="ph">' + ic(c.icon) + '</span></span>') + '</span>';
+  };
+  const chips = p => Array.isArray(p.tools) && p.tools.length ? '<ul class="tl" aria-label="الأدوات">' + p.tools.slice(0, 5).map(t => '<li>' + E(t) + '</li>').join('') + '</ul>' : '';
+
   function tile(p, i) {
     const c = catOf(p.category), all = imgsOf(p), src = all[0], n = all.length;
-    return '<button type="button" class="wk-t" data-w="' + E(p.id) + '" aria-label="' + E(p.title) + (n > 1 ? ' — ' + n + ' صور' : '') + '">' +
-      '<span class="wk-m">' + (src ? '<img loading="lazy" decoding="async" src="' + E(src) + '" alt="' + E(p.title) + '">' : '<span class="ph">' + ic(c.icon) + '</span>') +
+    const app = isApp(p, c);
+    return '<button type="button" class="wk-t' + (app ? ' is-app' : '') + '" data-w="' + E(p.id) + '" aria-label="' + E(p.title) + (n > 1 ? ' — ' + n + ' صور' : '') + '">' +
+      '<span class="wk-m' + (app ? ' app' : '') + '">' + (app ? phones(all, c, p.title) : src ? '<img loading="lazy" decoding="async" src="' + E(src) + '" alt="' + E(p.title) + '">' : '<span class="ph">' + ic(c.icon) + '</span>') +
       (c.type === 'video' ? '<span class="pl"><span>' + ic('play') + '</span></span>' : '') +
-      (c.type !== 'video' && n > 1 ? '<span class="wk-k">' + ic('layers') + '<b>' + n + '</b> صور</span>' : '') + '</span>' +
+      (!app && c.type !== 'video' && n > 1 ? '<span class="wk-k">' + ic('layers') + '<b>' + n + '</b> صور</span>' : '') + '</span>' +
       '<span class="wk-n">' + pad(i + 1) + '</span>' +
       '<span class="wk-o">' + (p.tag ? '<span class="tg">' + E(p.tag) + '</span>' : '') + '<strong dir="auto">' + E(p.title) + '</strong>' +
-      (p.desc ? '<small>' + E(p.desc) + '</small>' : '') + '<em>' + (c.type === 'video' ? 'شاهد' : n > 1 ? 'تصفّح الصور' : 'شوف العمل') + ' ' + ic('arrowL') + '</em></span></button>';
+      (p.desc ? '<small>' + E(p.desc) + '</small>' : '') + chips(p) + '<em>' + (app ? 'تفاصيل التطبيق' : c.type === 'video' ? 'شاهد' : n > 1 ? 'تصفّح الصور' : 'شوف العمل') + ' ' + ic('arrowL') + '</em></span></button>';
   }
   function fit(im) {
     if (!im || !im.naturalWidth) return;
-    const m = im.closest('.wk-m'); if (!m) return;
+    const m = im.closest('.wk-m'); if (!m || m.classList.contains('app')) return;
     const r = im.naturalWidth / im.naturalHeight;
     m.style.aspectRatio = String(Math.min(Math.max(r, view === 'big' ? .9 : .62), 2));
   }
@@ -147,13 +158,16 @@
     const pics = em ? [] : imgsOf(p), k = Math.min(vwI, Math.max(0, pics.length - 1)), src = pics[k];
     const fig = em ? '<div class="vw-v"><iframe src="' + E(em) + '" title="' + E(p.title) + '" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe></div>'
       : src ? '<img src="' + E(src) + '" alt="' + E(p.title) + (pics.length > 1 ? ' — ' + (k + 1) : '') + '" draggable="false">' : '<div class="vw-ph">' + ic(c.icon) + '</div>';
-    const go = (c.type === 'video' && !em && href !== '#') ? '<a class="btn primary vw-go" href="' + E(href) + '" target="_blank" rel="noopener noreferrer">شغّل الفيديو ' + ic('ext') + '</a>'
+    const app = isApp(p, c), lks = (Array.isArray(p.links) ? p.links : []).filter(x => x && x.url && link(x.url) !== '#');
+    const ft = (Array.isArray(p.features) ? p.features : []).filter(Boolean);
+    const appGo = app ? (lks.length ? lks : (href !== '#' ? [{ label: 'افتح المشروع', url: href }] : [])).map((x, j) => '<a class="btn' + (j ? '' : ' primary') + ' vw-go" href="' + E(link(x.url)) + '" target="_blank" rel="noopener noreferrer">' + E(x.label || 'افتح الرابط') + ' ' + ic('ext') + '</a>').join('') : '';
+    const go = app ? appGo : (c.type === 'video' && !em && href !== '#') ? '<a class="btn primary vw-go" href="' + E(href) + '" target="_blank" rel="noopener noreferrer">شغّل الفيديو ' + ic('ext') + '</a>'
       : (c.type !== 'video' && href !== '#') ? '<a class="btn vw-go" href="' + E(href) + '" target="_blank" rel="noopener noreferrer">افتح المشروع الأصلي ' + ic('ext') + '</a>' : '';
     return {
       cnt: pad(i + 1) + ' / ' + pad(n),
       cat: ic(c.icon) + ' ' + E(c.name),
       fig: fig, emb: !!em, pics: pics, k: k,
-      info: (p.tag ? '<span class="tg">' + E(p.tag) + '</span>' : '') + '<h2 dir="auto">' + E(p.title) + '</h2>' + (p.desc ? '<p>' + E(p.desc) + '</p>' : '') + go
+      info: (p.tag ? '<span class="tg">' + E(p.tag) + '</span>' : '') + '<h2 dir="auto">' + E(p.title) + '</h2>' + (p.status ? '<span class="pj-st">' + E(p.status) + '</span>' : '') + (p.desc ? '<p>' + E(p.desc) + '</p>' : '') + (app ? chips(p) : '') + (app && ft.length ? '<ul class="ft">' + ft.map(f => '<li>' + ic('check') + '<span dir="auto">' + E(f) + '</span></li>').join('') + '</ul>' : '') + go
     };
   }
   function vwOpen(id, k) {
@@ -190,6 +204,7 @@
     const sb = vw.querySelector('[data-vsheet]'); sb.hidden = np < 2; sb.setAttribute('aria-pressed', String(sheet));
     vw.querySelectorAll('[data-vw]').forEach(b => { b.hidden = n < 2; });
     vw.classList.toggle('one', np < 2);
+    vw.classList.toggle('app', isApp(p, catOf(p.category)));
     vw.classList.toggle('sheet', sheet);
     zoomed = false;
     const f = d.getElementById('vwf'); f.className = 'vw-fig' + (x.emb ? ' emb' : ''); f.innerHTML = x.fig;
@@ -201,7 +216,8 @@
       t.innerHTML = np > 1 ? x.pics.map((s, k) => '<button type="button" class="vw-t" data-vj="' + k + '" aria-label="صورة ' + (k + 1) + '"><img loading="lazy" decoding="async" src="' + E(s) + '" alt=""></button>').join('') : '';
     }
     [].forEach.call(t.children, (b, k) => { b.classList.toggle('on', k === x.k); b.setAttribute('aria-current', k === x.k ? 'true' : 'false'); });
-    const on = t.children[x.k]; if (on && on.scrollIntoView) on.scrollIntoView({ inline: 'center', block: 'nearest' });
+    const on = t.children[x.k]; if (on) t.scrollLeft += (on.getBoundingClientRect().left + on.offsetWidth / 2) - (t.getBoundingClientRect().left + t.clientWidth / 2);
+    const bt = vw.querySelector('.vw-bot'); if (bt) bt.scrollTop = 0;
     const pre = []; if (np > 1) pre.push(x.pics[(x.k + 1) % np], x.pics[(x.k - 1 + np) % np]);
     const nx = L[(i + 1) % n]; if (nx && nx !== p) pre.push(imgsOf(nx)[0]);
     pre.forEach(s => { if (s) new Image().src = s; });

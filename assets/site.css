@@ -501,3 +501,88 @@ a.cc:hover,.cc:has(a:hover){transform:translateY(-4px);border-color:rgba(var(--c
 .fq[open] .fa{animation:faIn .4s var(--ease)}
 @keyframes faIn{from{opacity:0;transform:translateY(-8px)}}
 .fa p{color:var(--muted);font-size:17.5px;line-height:1.9;max-width:64ch}
+
+/* ===== v2: الباقات، ليه أنا، الشهادات، أدوات المشاريع ===== */
+.tl{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.tl li{font-family:"Alexandria",sans-serif;font-size:12.5px;font-weight:500;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 11px;line-height:1.7}
+.sub-h{font-size:clamp(24px,3vw,32px);text-align:center;margin:64px 0 28px}
+
+.why{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
+.wy{position:relative;padding:30px 28px 28px;border-radius:var(--r);border:1px solid var(--line);background:linear-gradient(160deg,rgba(var(--c),.10),transparent 60%),var(--surface);transition:transform .3s var(--ease),border-color .3s}
+.wy:hover{transform:translateY(-5px);border-color:rgba(var(--c),.6)}
+.wy .wn{font-family:"Alexandria",sans-serif;font-weight:700;font-size:15px;color:rgb(var(--c));letter-spacing:.04em}
+.wy h3{font-size:22px;margin:10px 0 8px;line-height:1.5}
+.wy p{color:var(--muted);font-size:16.5px;line-height:1.8;margin:0}
+
+.tst{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.tq{margin:0;padding:30px 28px;border-radius:var(--r);border:1px solid var(--line);background:var(--surface);position:relative}
+.tq::before{content:"”";position:absolute;inset-block-start:6px;inset-inline-end:22px;font-family:Georgia,serif;font-size:84px;line-height:1;color:rgba(var(--accent-rgb),.35)}
+.tq blockquote{margin:0 0 18px;font-size:18px;line-height:1.9}
+.tq figcaption{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:15px}
+.tq figcaption b{font-family:"Alexandria",sans-serif;color:var(--accent2)}
+.tq figcaption span{color:var(--muted)}
+.tq figcaption a{color:var(--accent2);display:inline-flex}
+
+.pks{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;align-items:stretch}
+.pk{position:relative;display:flex;flex-direction:column;gap:14px;padding:32px 28px 28px;border-radius:var(--r);border:1px solid var(--line);background:linear-gradient(170deg,rgba(var(--c),.10),transparent 55%),var(--surface);transition:transform .3s var(--ease),border-color .3s}
+.pk:hover{transform:translateY(-6px);border-color:rgba(var(--c),.6)}
+.pk.hot{border-color:rgba(var(--accent-rgb),.7);box-shadow:0 24px 50px -30px rgba(var(--accent-rgb),.6)}
+.pk .ico{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:rgba(var(--c),.14);border:1px solid rgba(var(--c),.4);color:var(--accent2);font-size:24px}
+.pk h3{font-size:23px;line-height:1.5;margin:0}
+.pk-d{color:var(--muted);font-size:16.5px;line-height:1.75;margin:0}
+.pk-b{position:absolute;inset-block-start:-13px;inset-inline-start:24px;background:linear-gradient(135deg,var(--accent2),var(--accent));color:var(--on-accent);font-family:"Alexandria",sans-serif;font-weight:700;font-size:13px;padding:3px 14px;border-radius:999px}
+.pk-p{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;padding-block:12px;border-block:1px dashed var(--line)}
+.pk-p small{color:var(--muted);font-size:14px}
+.pk-p b{font-family:"Alexandria",sans-serif;font-size:26px;color:var(--accent2);line-height:1.3}
+.pk-p b.cs{font-size:19px}
+.pk-p em{flex-basis:100%;font-style:normal;color:var(--muted);font-size:14px}
+.pk ul{list-style:none;margin:0;padding:0;display:grid;gap:9px}
+.pk li{display:flex;gap:10px;align-items:flex-start;font-size:16.5px;line-height:1.7}
+.pk li svg{flex:none;width:20px;height:20px;margin-top:4px;color:var(--accent2);stroke:currentColor;fill:none;stroke-width:2.4}
+.pk .btn{margin-top:auto;justify-content:center}
+.pk .btn{white-space:nowrap;padding-inline:18px;font-size:15px}
+
+/* ===== v2: عرض مشاريع التطبيقات (موكب الموبايل) ===== */
+.media.app,.wk-m.app{aspect-ratio:4/3.3;background:radial-gradient(120% 90% at 50% 0%,rgba(var(--c,var(--accent-rgb)),.30),transparent 62%),linear-gradient(160deg,var(--surface2),var(--bg2));display:grid;place-items:center;padding-top:6%}
+.feat .media.app{aspect-ratio:16/9}
+.phs{position:relative;display:block;width:100%;height:100%}
+.phn{position:absolute;bottom:-8%;left:50%;right:auto;height:92%;aspect-ratio:9/19.5;border-radius:26px;border:5px solid #0b0a08;outline:1px solid rgba(var(--accent-rgb),.45);background:#000;overflow:hidden;box-shadow:0 26px 40px -18px rgba(0,0,0,.85);transition:transform .6s var(--ease)}
+.phn::before{content:"";position:absolute;inset-block-start:6px;inset-inline:0;margin-inline:auto;width:26%;height:6px;border-radius:9px;background:#000;z-index:2}
+.phn img,.card:hover .media.app img,.wk-t:hover .wk-m.app img{width:100%;height:100%;object-fit:cover;object-position:top;display:block;transform:none}
+.phn .ph{display:grid;place-items:center;width:100%;height:100%;color:var(--accent2);font-size:34px;background:linear-gradient(160deg,var(--surface2),var(--bg2))}
+.phn.c{z-index:3;transform:translateX(-50%)}
+.phn.l{z-index:1;transform:translateX(-118%) rotate(-7deg) scale(.86);transform-origin:bottom center}
+.phn.r{z-index:2;transform:translateX(18%) rotate(7deg) scale(.86);transform-origin:bottom center}
+.phs.n2 .phn.l{transform:translateX(-92%) rotate(-5deg) scale(.92)}
+.phs.n2 .phn.r{transform:translateX(-8%) rotate(5deg) scale(.92)}
+.card:hover .phn.c,.wk-t:hover .phn.c{transform:translateX(-50%) translateY(-8px)}
+.card:hover .phn.l,.wk-t:hover .phn.l{transform:translateX(-126%) rotate(-10deg) scale(.86)}
+.card:hover .phn.r,.wk-t:hover .phn.r{transform:translateX(26%) rotate(10deg) scale(.86)}
+.card .tl,.wk-o .tl{margin-top:8px}
+.wk-o .tl li{color:#d6cdbb;border-color:rgba(255,255,255,.25)}
+.pj-st{display:inline-flex;align-items:center;gap:8px;font-family:"Alexandria",sans-serif;font-size:13px;font-weight:500;color:#9ad7a6;border:1px solid rgba(154,215,166,.4);border-radius:999px;padding:2px 14px;margin:4px 0}
+.vw-info .tl{justify-content:center;margin:8px 0 2px}
+.vw-info .tl li{color:#d6cdbb;border-color:rgba(255,255,255,.28)}
+.ft{list-style:none;margin:8px 0 4px;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:6px 22px;text-align:start;width:100%;max-width:640px}
+.ft li{display:flex;gap:9px;align-items:flex-start;font-size:15.5px;line-height:1.7;color:#d6cdbb}
+.ft li svg{flex:none;width:18px;height:18px;margin-top:4px;color:var(--accent2);stroke:currentColor;fill:none;stroke-width:2.4}
+.vw-info .vw-go+.vw-go{margin-inline-start:8px}
+@media(max-width:640px){.media.app,.wk-m.app{aspect-ratio:1/1}.phn{border-width:4px;border-radius:20px}}
+
+/* عارض التطبيقات: لقطة الشاشة بجانب التفاصيل على الشاشات الكبيرة */
+.vw.app{grid-template-rows:auto minmax(0,40vh) minmax(0,1fr)}
+.vw.app .vw-stage{padding:0 56px}
+.vw.app .vw-bot{overflow:auto;justify-items:stretch;min-width:0;overscroll-behavior:contain}
+.vw.app .vw-info{width:100%;min-width:0}
+.vw.app .ft{grid-template-columns:1fr}
+@media(min-width:900px){
+  .vw.app{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}
+  .vw.app .vw-top{grid-column:1/-1}
+  .vw.app .vw-bot{grid-column:1;grid-row:2;align-content:center;justify-items:start;padding:10px 40px 30px 20px}
+  .vw.app .ft{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+  .vw.app .vw-stage{grid-column:2;grid-row:2;padding:0 70px}
+  .vw.app .vw-info{align-items:flex-start;text-align:start;max-width:none}
+  .vw.app .vw-info .tl{justify-content:flex-start}
+  .vw.app .vw-info h2{font-size:clamp(26px,3vw,38px)}
+  .vw.app .vw-th{justify-content:flex-start}
+}
