@@ -314,6 +314,7 @@
     const kpi = (ic, n, l, sub) => '<div class="kpi"><span class="ic">' + I(ic) + '</span><div><b>' + n + '</b><span>' + l + '</span>' + (sub ? '<small>' + sub + '</small>' : '') + '</div></div>';
     return '<section class="welcome"><div><span class="eyebrow">لوحة التحكم</span><h2>أهلاً بيك' + (nm ? ' يا ' + nm : '') + '</h2><p>عدّل أي حاجة في موقعك من هنا، وشوفها في المعاينة، وبعدين انشرها بضغطة واحدة.</p></div>' +
       '<div class="wa"><button class="btn primary" data-act="addWork">' + I('plus') + ' إضافة عمل جديد</button><button class="btn" data-act="preview">' + I('eye') + ' معاينة الموقع</button></div></section>' +
+      '<figure class="kidfig"><div class="kidfig-s"><img src="kid.webp" alt="" width="558" height="1251" decoding="async"></div></figure>' +
       comp + '<div class="cards">' + kpi('folder', P.length, 'عمل', vis + ' ظاهر للزوار') + kpi('grid', S.categories.length, 'قسم') + kpi('star', S.packages.length, 'باقة') + kpi('bolt', S.skills.length, 'أداة / مهارة') + '</div>' +
       '<div class="sec-h"><h2>إجراءات سريعة</h2><span>اختصارات لأكتر الحاجات استخدامًا</span></div>' +
       '<div class="qa">' + qc('user', 'الصفحة الرئيسية', 'الاسم والصورة والنبذة', 'data-go="content"') + qc('star', 'الباقات والأسعار', 'أضف أو عدّل باقاتك', 'data-go="pricing"') + qc('mail', 'بيانات التواصل', 'الإيميل وواتساب والسوشيال', 'data-go="contact"') + qc('sliders', 'المظهر والألوان', 'غيّر هوية الموقع', 'data-go="look"') + '</div>' +
@@ -705,4 +706,21 @@
     let s = null; try { s = JSON.parse(sessionStorage.getItem('sx.admin.sess') || 'null'); } catch (e) {}
     if (s && s.repo && s.token) { try { await connect(s.repo, s.token); start(); } catch (e) { try { sessionStorage.removeItem('sx.admin.sess'); } catch (x) {} } }
   })();
+})();
+
+/* بيظبط ارتفاع صورة الولد في الرئيسية على حسب مساحة الشاشة الفاضية، عشان تظهر كاملة من غير Scroll */
+(function () {
+  function fit() {
+    var f = document.querySelector('.kidfig'); if (!f) return;
+    var st = f.querySelector('.kidfig-s'), acts = document.querySelector('.bar-acts');
+    var top = f.getBoundingClientRect().top + (window.pageYOffset || 0);
+    var dock = acts && getComputedStyle(acts).position === 'fixed' ? acts.offsetHeight + 12 : 0;   // شريط الأزرار الثابت تحت في الموبايل
+    var pad = st ? parseFloat(getComputedStyle(st).paddingTop) || 0 : 0;
+    var h = Math.max(200, window.innerHeight - top - dock - pad - 24);
+    document.documentElement.style.setProperty('--kidh', Math.floor(h) + 'px');
+  }
+  function soon() { requestAnimationFrame(fit); setTimeout(fit, 450); setTimeout(fit, 1300); }
+  window.addEventListener('resize', soon);
+  window.addEventListener('load', soon);
+  new MutationObserver(soon).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden'] });
 })();

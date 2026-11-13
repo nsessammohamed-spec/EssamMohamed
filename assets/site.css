@@ -985,3 +985,6 @@ section.s{isolation:isolate;overflow-x:clip}
   .cc:has(.cp)>a{flex:1 1 calc(100% - 60px)}
   .cc:has(.cp) .cp{margin-inline-start:auto}
 }
+
+/* إخفاء من التصميم فقط (الكود لسه شغال، امسح السطور دي لو عايزهم يرجعوا) */
+.hero-av,.hero-cta,.hero-facts{display:none!important}   /* شارة "متاح للعمل" + زرّا شوف أعمالي/تواصل معايا + أرقام الأعمال والمجالات والأدوات */
