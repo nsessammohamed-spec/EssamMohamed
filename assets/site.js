@@ -95,7 +95,7 @@
   const phones = (all, c, title) => {
     const pics = all.slice(0, 3), cls = pics.length === 1 ? ['c'] : pics.length === 2 ? ['l', 'r'] : ['l', 'c', 'r'];
     const order = pics.length === 3 ? [pics[1], pics[0], pics[2]] : pics;
-    return '<span class="phs n' + Math.max(1, pics.length) + '">' + (pics.length ? order.map((u, i) => '<span class="phn ' + cls[i] + '"><img loading="lazy" decoding="async" src="' + E(u) + '" alt="' + E(title) + '"></span>').join('') : '<span class="phn c"><span class="ph">' + ic(c.icon) + '</span></span>') + '</span>';
+    return '<span class="phs n' + Math.max(1, pics.length) + '">' + (pics.length ? order.map((u, i) => '<span class="phn ' + cls[i] + '"><img loading="lazy" decoding="async" src="' + E(u) + '" alt="' + E(title) + '"></span>').join('') : '<span class="phn c"><span class="ps"><b dir="auto">' + E(String(title || '').split('|')[0].trim().slice(0, 14)) + '</b><i></i><i></i><i></i></span></span>') + '</span>';
   };
   const chips = p => Array.isArray(p.tools) && p.tools.length ? '<ul class="tl" aria-label="الأدوات">' + p.tools.slice(0, 5).map(t => '<li>' + E(t) + '</li>').join('') + '</ul>' : '';
 
@@ -113,8 +113,23 @@
     return '<a class="card' + (p.featured ? ' feat' : '') + '" style="--i:' + i + ';--c:' + rgbOf(c, Math.max(0, D.categories.findIndex(x => x.id === p.category))) + '" href="works.html#w-' + encodeURIComponent(p.id) + '" aria-label="' + E(p.title) + '">' + media + body + '</a>';
   }
 
+  /* مشروع تطبيق لوحده في تصنيفه: بيتعرض كلوحة عريضة بدل كارت صغير لوحده */
+  function showcase(p) {
+    const c = catOf(p.category), all = imgsOf(p), href = 'works.html#w-' + encodeURIComponent(p.id);
+    const ft = (Array.isArray(p.features) ? p.features : []).filter(Boolean).slice(0, 4);
+    const lks = (Array.isArray(p.links) ? p.links : []).filter(x => x && x.url && link(x.url) !== '#').slice(0, 2);
+    return '<article class="sc" style="--c:' + rgbOf(c, Math.max(0, D.categories.findIndex(x => x.id === p.category))) + '">' +
+      '<div class="sc-b">' + (p.tag ? '<span class="tg">' + E(p.tag) + '</span>' : '') + (p.status ? '<span class="pj-st">' + E(p.status) + '</span>' : '') +
+      '<h3 dir="auto">' + E(p.title) + '</h3>' + (p.desc ? '<p dir="auto">' + E(p.desc) + '</p>' : '') +
+      (ft.length ? '<ul class="ft">' + ft.map(x => '<li>' + ic('check') + '<span dir="auto">' + E(x) + '</span></li>').join('') + '</ul>' : '') + chips(p) +
+      '<div class="sc-go"><a class="btn primary" href="' + href + '">' + E('شوف تفاصيل التطبيق') + ' ' + ic('arrowL') + '</a>' +
+      lks.map(x => '<a class="btn ghost" href="' + E(link(x.url)) + '" target="_blank" rel="noopener noreferrer">' + E(x.label || 'افتح المشروع') + ' ' + ic('ext') + '</a>').join('') + '</div></div>' +
+      '<a class="media app sc-m" href="' + href + '" aria-label="' + E(p.title) + '">' + phones(all, c, p.title) + '</a></article>';
+  }
+
   function grid() {
     const list = shown().filter(p => cur === 'all' || p.category === cur);
+    if (cur !== 'all' && list.length === 1 && isApp(list[0], catOf(list[0].category))) return showcase(list[0]);
     return list.length ? list.map(card).join('') : '<div class="empty">' + E(T('emptyWorks')) + '</div>';
   }
 
@@ -125,6 +140,13 @@
     let no = 0; const num = () => String(++no).padStart(2, '0'); const on = k => !(D.show && D.show[k] === false);
     const menu = [];
     const sections = [];
+    const policy = () => {
+      const PP = D.pricingPolicy, pts = PP && Array.isArray(PP.points) ? PP.points.filter(x => x && x.t) : [];
+      if (!pts.length) return '';
+      const icn = ['history', 'edit', 'info'];
+      return '<aside class="pol rv" aria-label="' + E(PP.title || '') + '">' + (PP.title ? '<h3>' + E(PP.title) + '</h3>' : '') +
+        '<ul>' + pts.map((x, i) => '<li><span class="pi">' + ic(icn[i % icn.length]) + '</span><b dir="auto">' + E(x.t) + '</b>' + (x.d ? '<span dir="auto">' + E(x.d) + '</span>' : '') + '</li>').join('') + '</ul></aside>';
+    };
 
     if (D.stats.length) sections.push('<section class="s" style="padding-top:60px"><div class="wrap rv"><div class="stats">' +
       D.stats.map(s => '<div class="stat"><b>' + E(s.value) + '</b><span>' + E(s.label) + '</span></div>').join('') + '</div></div></section>');
@@ -185,7 +207,7 @@
             '<div class="pk-p">' + (x.price ? '<small>' + E(T('pkFrom')) + '</small><b>' + E(x.price) + '</b>' : '<b class="cs">' + E(T('pkCustom')) + '</b>') + (x.note ? '<em>' + E(x.note) + '</em>' : '') + '</div>' +
             (feats.length ? '<ul>' + feats.map(f => '<li>' + ic('check') + '<span dir="auto">' + E(ar(f)) + '</span></li>').join('') + '</ul>' : '') +
             '<button type="button" class="btn ' + (x.featured ? 'primary' : 'ghost') + '" data-ask="' + E(c ? c.name : x.name) + '">' + E(T('pkAsk')) + ' ' + ic('arrowL') + '</button></article>';
-        }).join('') + '</div></div></section>');
+        }).join('') + '</div>' + policy() + '</div></section>');
     }
 
     const faq = (Array.isArray(D.faq) ? D.faq : []).filter(x => x && x.q && x.a);

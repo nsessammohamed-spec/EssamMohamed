@@ -684,3 +684,131 @@ section.s{isolation:isolate;overflow-x:clip}
   mask-image:linear-gradient(90deg,transparent,#000 18%,#000 82%,transparent),linear-gradient(180deg,transparent,#000 14%);
   mask-composite:intersect}
 :root[data-mode=light] .hero::after{display:block;height:100px}
+
+/* =====================================================================
+   v7: عرض قسم البرمجة — لوحة عريضة للتطبيق + شاشة موبايل بديلة لو مفيش لقطات
+   ===================================================================== */
+/* الشاشة البديلة جوه الموبايل (لحد ما تتضاف لقطات حقيقية) */
+.phn .ps{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;width:100%;height:100%;padding:34px 16px 22px;direction:ltr;
+  background:radial-gradient(90% 55% at 50% 0%,rgba(var(--c,var(--accent-rgb)),.38),transparent 70%),linear-gradient(170deg,#17140e,#0b0a08)}
+.phn .ps b{font-family:var(--f-serif);font-weight:700;font-size:clamp(15px,1.5vw,21px);letter-spacing:.06em;color:var(--accent2);margin-bottom:auto;text-align:center;overflow-wrap:anywhere}
+.phn .ps i{display:block;width:100%;height:11%;border-radius:12px;background:rgba(var(--accent-rgb),.14);border:1px solid rgba(var(--accent-rgb),.28)}
+.phn .ps i:nth-of-type(2){width:82%}.phn .ps i:nth-of-type(3){width:64%}
+
+/* لوحة التطبيق: النص على اليمين والموبايل على الشمال */
+.sc{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);align-items:stretch;border-radius:var(--r);overflow:hidden;
+  border:1px solid rgba(var(--c,var(--accent-rgb)),.28);background:linear-gradient(170deg,rgba(var(--c,var(--accent-rgb)),.10),transparent 60%),var(--surface)}
+.sc-b{display:flex;flex-direction:column;align-items:flex-start;gap:12px;padding:44px 48px;justify-content:center;min-width:0}
+.sc-b h3{font-size:clamp(26px,3vw,38px);line-height:1.35}
+.sc-b>p{color:var(--muted);font-size:19px;line-height:1.85;max-width:46ch}
+.sc .ft{max-width:none;margin:6px 0;grid-template-columns:1fr 1fr;gap:10px 24px}
+.sc .ft li{color:var(--ink);font-size:16px}
+.sc .tl{margin:4px 0 0}
+.sc-go{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px}
+.sc-m{position:relative;display:block;min-height:440px;aspect-ratio:auto;border-inline-start:1px solid var(--line);text-decoration:none;overflow:hidden}
+.sc-m.media.app{aspect-ratio:auto;padding-top:0}
+.sc-m .phs{position:absolute;inset:0}
+.sc-m .phn{height:86%;bottom:-6%}
+.sc:hover .phn.c{transform:translateX(-50%) translateY(-8px)}
+@media(max-width:900px){
+  .sc{grid-template-columns:1fr}
+  .sc-m{order:-1;min-height:340px;border-inline-start:0;border-bottom:1px solid var(--line)}
+  .sc-b{padding:30px 24px}
+  .sc .ft{grid-template-columns:1fr}
+}
+
+/* v8: شريط عنوان القسم: تدرّج ناعم بين لون الشريط ولون الخلفية بدل الحافة الحادة */
+.sh.ctr::before{top:-64px;bottom:-54px;background:linear-gradient(to bottom,transparent,var(--hs) 34%,var(--hs) 66%,transparent)}
+@media(max-width:860px){.sh.ctr::before{top:-44px;bottom:-34px}}
+
+/* v9: كروت «ليه أنا» — تدرّج لوني أوضح لكل كارت + النص في المنتصف */
+.wy{text-align:center;display:flex;flex-direction:column;align-items:center;
+  border-color:rgba(var(--c),.30);
+  background:radial-gradient(120% 70% at 50% 0%,rgba(var(--c),.26),transparent 70%),linear-gradient(180deg,rgba(var(--c),.14),rgba(var(--c),.03) 85%),var(--surface)}
+.wy .wn{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:rgba(var(--c),.16);border:1px solid rgba(var(--c),.55);letter-spacing:0;margin-bottom:6px}
+.wy h3{margin:12px 0 10px}
+.wy p{max-width:30ch}
+:root[data-mode=light] .wy{background:radial-gradient(120% 70% at 50% 0%,rgba(var(--c),.30),transparent 70%),linear-gradient(180deg,rgba(var(--c),.16),rgba(var(--c),.04) 85%),var(--surface)}
+.wy:hover{border-color:rgba(var(--c),.7);box-shadow:0 26px 40px -28px rgba(var(--c),.6)}
+
+/* v10: سياسة التعديل بعد التسليم (تحت الباقات) */
+.pol{margin:34px auto 0;max-width:980px;padding:30px 28px 28px;border-radius:var(--r);text-align:center;
+  border:1px dashed rgba(var(--accent-rgb),.5);background:radial-gradient(120% 90% at 50% 0%,rgba(var(--accent-rgb),.14),transparent 70%),var(--surface)}
+.pol h3{font-size:clamp(21px,2.4vw,26px);margin:0 0 20px}
+.pol ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px 26px}
+.pol li{display:flex;flex-direction:column;align-items:center;gap:6px}
+.pol .pi{display:grid;place-items:center;width:46px;height:46px;border-radius:50%;margin-bottom:4px;background:rgba(var(--accent-rgb),.14);border:1px solid rgba(var(--accent-rgb),.5);color:var(--accent2);font-size:21px}
+.pol li b{font-family:var(--f-head);font-weight:700;font-size:18.5px;line-height:1.5;color:var(--ink)}
+.pol li>span:last-child{color:var(--muted);font-size:16px;line-height:1.75;max-width:30ch}
+@media(max-width:860px){.pol ul{grid-template-columns:1fr}.pol{padding:26px 20px}}
+
+/* =====================================================================
+   v8: "خلينا نشتغل سوا" — تصميم جديد: عمودين (الكلام والخطوات | نموذج الرسالة)
+   خطوات بخط زمني، معاينة الرسالة على شكل فقاعة شات، كروت تواصل مدمجة
+   ===================================================================== */
+.cx{text-align:start;padding:clamp(26px,4.5vw,58px)}
+.cx>*{position:relative;z-index:1}
+.cx::after{content:"";position:absolute;z-index:0;pointer-events:none;width:440px;aspect-ratio:1;border-radius:50%;inset-inline-start:-170px;inset-block-end:-190px;
+  background:repeating-radial-gradient(circle closest-side,transparent 0 40px,var(--ring) 40px 41px);
+  -webkit-mask-image:radial-gradient(closest-side,#000 20%,transparent 98%);mask-image:radial-gradient(closest-side,#000 20%,transparent 98%)}
+.cx h2{font-size:calc(clamp(32px,4.2vw,54px) * var(--design-heading-scale,1));line-height:1.35;margin:0}
+.cx h2::after{content:"";display:block;width:64px;height:4px;border-radius:4px;margin-top:16px;background:linear-gradient(90deg,var(--accent2),var(--accent))}
+.cx>p{max-width:40ch;margin:16px 0 0;font-size:19px}
+
+/* الخطوات: خط زمني رأسي بدل 3 صناديق */
+.stp{display:flex;flex-direction:column;gap:0;margin:28px 0 6px}
+.stp li{position:relative;padding:0 0 24px;border:0;border-radius:0;background:none;gap:16px;align-items:flex-start}
+.stp li:last-child{padding-bottom:6px}
+.stp li:hover{transform:none;border-color:transparent}
+.stp li:not(:last-child)::before{content:"";position:absolute;inset-inline-start:18px;top:44px;bottom:4px;width:2px;border-radius:2px;background:linear-gradient(rgba(var(--c),.75),rgba(var(--c),.12))}
+.stp b{box-shadow:0 0 0 6px rgba(var(--c),.16),0 10px 20px -10px rgba(var(--c),.9);transition:transform .3s var(--ease)}
+.stp li:hover b{transform:scale(1.1)}
+.stp h3{font-size:19px;margin:2px 0 4px}
+.stp p{font-size:15.5px}
+
+/* كروت التواصل تحت الخطوات */
+.ct-s{display:grid;grid-template-columns:1fr;gap:12px;margin-top:8px;padding-top:24px;border-top:1px dashed var(--line)}
+.cc{padding:14px 18px;border-radius:18px}
+.cc b{font-size:17px}
+.cc span{font-size:15px}
+.soc{justify-content:flex-start;gap:8px;margin-top:20px}
+.soc a{font-size:14px;padding:7px 16px}
+
+/* النموذج: لوحة مرفوعة بترقيم الخانات */
+.cf{counter-reset:f;gap:22px;padding:clamp(22px,3vw,36px);border-radius:28px;border:1px solid rgba(var(--accent-rgb),.38);
+  background:linear-gradient(180deg,rgba(var(--accent-rgb),.07),transparent 38%),var(--surface);
+  box-shadow:inset 0 3px 0 var(--accent),0 40px 70px -44px rgba(var(--accent-rgb),.55)}
+.fl>span{display:flex;align-items:center;gap:10px;font-size:15px}
+.fl>span::before{counter-increment:f;content:counter(f);flex:none;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;font-size:12.5px;font-weight:700;direction:ltr;
+  color:var(--accent2);background:rgba(var(--accent-rgb),.14);border:1px solid rgba(var(--accent-rgb),.42)}
+.cf input,.cf textarea{background:color-mix(in srgb,var(--bg) 55%,var(--surface));border-radius:16px;padding:14px 18px}
+.cf textarea{min-height:140px}
+.sv{padding:10px 18px}
+.sv[aria-pressed=true]::after{content:"✓";font-weight:700;margin-inline-start:2px}
+
+/* معاينة الرسالة: فقاعة شات */
+.cx .pv{padding:0;border:0;background:none}
+.cx .pv>span{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.cx .pv>span::before{content:"";width:8px;height:8px;border-radius:50%;background:#4ADE80}
+.cx .pv p{padding:14px 18px;border-radius:20px;border-end-start-radius:5px;background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.3);font-size:16px;max-width:none}
+.cx .pv p.empty{background:transparent;border:1px dashed rgba(var(--accent-rgb),.42)}
+
+.cf-b{gap:12px}
+.cf-b .btn{flex:1 1 200px;justify-content:center;padding-block:15px}
+
+/* ديسكتوب: عمودين (الكلام يمين | النموذج شمال) */
+@media(min-width:901px){
+  .cx:has(.cf){display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);grid-template-rows:auto auto auto auto 1fr;column-gap:clamp(28px,4vw,60px);align-items:start}
+  .cx:has(.cf)>.ct{display:contents}
+  .cx:has(.cf)>h2{grid-column:1;grid-row:1}
+  .cx:has(.cf)>p{grid-column:1;grid-row:2}
+  .cx:has(.cf)>.stp{grid-column:1;grid-row:3}
+  .cx:has(.cf)>.ct>.ct-s{grid-column:1;grid-row:4}
+  .cx:has(.cf)>.soc{grid-column:1;grid-row:5;align-self:start}
+  .cx:has(.cf)>.ct>.cf{grid-column:2;grid-row:1/span 5}
+}
+@media(max-width:900px){
+  .ct-s{order:0}
+  .cx h2::after{margin-inline:0}
+}
+@media(prefers-reduced-motion:reduce){.cx{animation:none}}
