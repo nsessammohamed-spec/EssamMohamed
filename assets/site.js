@@ -40,6 +40,22 @@
     s.setProperty('--accent', acc);
     s.setProperty('--accent2', hex(m === 'light' ? mix(rgb, [0, 0, 0], .42) : mix(rgb, [255, 255, 255], .35)));
     s.setProperty('--accent-rgb', rgb.join(','));
+    const z = D.design || {};
+    const validColor = v => /^#[0-9a-f]{6}$/i.test(String(v || '')) ? v : '';
+    [['--bg','bg'],['--bg2','bg2'],['--surface','surface'],['--surface2','surface2'],['--ink','ink'],['--muted','muted'],['--line','line']].forEach(([css,key]) => { const c = validColor(z[key]); if (c) s.setProperty(css,c); });
+    const clamp = (v,a,b,def) => Number.isFinite(+v) ? Math.max(a,Math.min(b,+v)) : def;
+    s.setProperty('--r',clamp(z.cardRadius,0,48,22)+'px');
+    s.setProperty('--design-body-size',clamp(z.bodySize,14,24,19)+'px');
+    s.setProperty('--design-content-width',clamp(z.contentWidth,900,1600,1200)+'px');
+    s.setProperty('--design-section-space',clamp(z.sectionSpace,40,180,110)+'px');
+    s.setProperty('--design-card-gap',clamp(z.cardGap,8,48,24)+'px');
+    s.setProperty('--design-card-ratio',['4/3','1/1','3/4','16/9'].includes(z.cardRatio)?z.cardRatio:'4/3');
+    s.setProperty('--design-button-radius',clamp(z.buttonRadius,0,999,999)+'px');
+    s.setProperty('--design-shadow',clamp(z.shadow,0,1.5,1));
+    const fonts={Tajawal:'\"Tajawal\",sans-serif',Alexandria:'\"Alexandria\",sans-serif',Roboto:'\"Roboto\",sans-serif'};
+    s.setProperty('--f-body',fonts[z.bodyFont]||'\"Tajawal\",sans-serif');
+    s.setProperty('--f-head',fonts[z.headingFont]||'\"Alexandria\",sans-serif');
+    s.setProperty('--design-heading-scale',clamp(z.headingScale,.8,1.4,1));
     const tc = d.querySelector('meta[name=theme-color]');
     if (tc) tc.content = m === 'light' ? '#FAF7F0' : '#0B0A08';
   }
