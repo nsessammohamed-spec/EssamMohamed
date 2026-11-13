@@ -941,3 +941,47 @@ section.s{isolation:isolate;overflow-x:clip}
 :root[data-mode=light] .fl>span::before,
 :root[data-mode=light] .card:hover .cb h3{color:var(--accent-ink)}
 :root[data-mode=light] .btn.ghost{border-color:var(--accent-ink)}
+
+/* ===== تطوير قسم "خلينا نشتغل سوا" ===== */
+.cx-k{display:flex;width:fit-content;align-items:center;gap:8px;margin-bottom:18px;padding:6px 14px 6px 16px;border-radius:999px;font-family:var(--f-ui);font-weight:600;font-size:13.5px;line-height:1.6;color:var(--accent2);background:rgba(var(--accent-rgb),.12);border:1px solid rgba(var(--accent-rgb),.4)}
+.cx-k::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:#4ADE80;box-shadow:0 0 0 0 rgba(74,222,128,.6);animation:pulse 2s infinite}
+.cx>p{font-size:18px;line-height:1.9;max-width:38ch}
+
+/* كروت التواصل بأيقونات */
+.cc{gap:14px}
+.cc-i{flex:none;display:grid;place-items:center;width:46px;height:46px;border-radius:15px;font-style:normal;color:rgb(var(--c));background:linear-gradient(145deg,rgba(var(--c),.26),rgba(var(--c),.08));border:1px solid rgba(var(--c),.42);box-shadow:0 12px 22px -14px rgba(var(--c),.9)}
+.cc-i svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.cc>div,.cc>a{flex:1 1 auto;min-width:0}
+.cc.av>div{flex:1 1 auto}
+
+/* عنوان حسابات السوشيال */
+.soc-t{flex-basis:100%;color:var(--muted);font-size:14.5px;line-height:1.6}
+
+/* رأس النموذج */
+.cf-h{padding-bottom:18px;margin-bottom:-2px;border-bottom:1px dashed var(--line)}
+.cf-h b{display:block;font-size:23px;line-height:1.45;color:var(--ink)}
+.cf-h p{margin:6px 0 0;color:var(--muted);font-size:15px;line-height:1.75}
+
+/* خانات وأزرار النموذج */
+.cf input:hover,.cf textarea:hover{border-color:rgba(var(--accent-rgb),.45)}
+.cf-b{margin-top:2px}
+.cf-b .btn.primary{flex:2 1 230px;box-shadow:0 18px 32px -16px rgba(var(--accent-rgb),.9)}
+.cf-b .btn.ghost{flex:1 1 150px}
+.cf-b .btn{transition:transform .25s var(--ease),box-shadow .25s,background .2s}
+.cf-b .btn:hover{transform:translateY(-3px)}
+
+/* الخطوات */
+.stp h3{color:var(--ink)}
+.stp p{color:var(--muted);line-height:1.75}
+
+@media(max-width:560px){
+  .cx>p{font-size:17px}
+  .cc-i{width:42px;height:42px;border-radius:13px}
+  .cf-h b{font-size:21px}
+  .cc{gap:10px;padding-inline:14px}
+  .cc .ltr{font-size:13.5px;word-break:normal;overflow-wrap:anywhere}
+  .cc .cp{padding:5px 12px;font-size:13px}
+  .cc:has(.cp){flex-wrap:wrap}
+  .cc:has(.cp)>a{flex:1 1 calc(100% - 60px)}
+  .cc:has(.cp) .cp{margin-inline-start:auto}
+}
