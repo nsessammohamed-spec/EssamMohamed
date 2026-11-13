@@ -100,6 +100,7 @@
     });
   }
   const imgSrc = p => !p ? '' : imgs.has(p) ? imgs.get(p).dataUrl : /^(https?:|data:)/i.test(p) ? p : '../' + p;
+  const imgList = p => (Array.isArray(p.images) && p.images.length ? p.images : (p.image ? [p.image] : [])).filter(Boolean);
   const catName = id => (S.categories.find(c => c.id === id) || { name: '—' }).name;
   const catIcon = id => (S.categories.find(c => c.id === id) || { icon: 'image' }).icon;
   const thumb = (p, round) => '<div class="th' + (round ? ' round' : '') + '">' + (p ? '<img src="' + esc(imgSrc(p)) + '" alt="" onerror="this.remove()">' : '') + '</div>';
@@ -134,6 +135,52 @@
     el.ondrop = e => { e.preventDefault(); el.classList.remove('over'); take(e.dataTransfer.files[0]); };
   }
 
+  /* معرض صور العمل: رفع أكتر من صورة، ترتيب، غلاف، حذف، ولصق روابط */
+  function galleryField(id) {
+    return '<label>صور العمل <small class="h" style="font-weight:400">— أول صورة هي الغلاف اللي بتظهر في الكارت</small></label>' +
+      '<div class="gal" id="' + id + '"><div class="gl" data-gl></div>' +
+      '<div class="ga"><button type="button" class="btn sm" data-add>' + I('upload') + ' رفع صور (تقدر تختار كذا صورة مرة واحدة)</button>' +
+      '<textarea dir="ltr" data-urls rows="2" placeholder="أو الصق روابط صور — رابط في كل سطر"></textarea>' +
+      '<button type="button" class="btn sm ghost" data-addurls>' + I('plus') + ' إضافة الروابط</button>' +
+      '<small class="h">اسحب الصور هنا أو اضغط رفع. الصور بتتصغّر وتتضغط أوتوماتيك. استخدم الأسهم لترتيبها ونجمة لتعيين الغلاف.</small></div>' +
+      '<input type="file" accept="image/*" multiple hidden></div>';
+  }
+  function bindGallery(el, arr, max, onChange) {
+    const gl = $('[data-gl]', el), fi = $('input[type=file]', el);
+    const paint = () => {
+      gl.innerHTML = arr.length ? arr.map((v, k) => '<div class="gi' + (k === 0 ? ' cover' : '') + '" data-k="' + k + '"><div class="th"><img src="' + esc(imgSrc(v)) + '" alt="" onerror="this.remove()"></div>' +
+        '<span class="gn">' + (k === 0 ? 'الغلاف' : (k + 1)) + '</span><div class="gb">' +
+        '<button type="button" class="ib" data-gm="-1" aria-label="قدّم" title="قدّم" ' + (k === 0 ? 'disabled' : '') + '>' + I('up') + '</button>' +
+        '<button type="button" class="ib" data-gm="1" aria-label="أخّر" title="أخّر" ' + (k === arr.length - 1 ? 'disabled' : '') + '>' + I('down') + '</button>' +
+        (k === 0 ? '' : '<button type="button" class="ib" data-gc aria-label="خليها الغلاف" title="خليها الغلاف">' + I('star') + '</button>') +
+        '<button type="button" class="ib bad" data-gd aria-label="احذف" title="احذف">' + I('trash') + '</button></div></div>').join('') : '<div class="gempty">لسه مفيش صور. ارفع صور العمل كلها هنا.</div>';
+      onChange(arr.slice());
+    };
+    gl.onclick = e => {
+      const it = e.target.closest('.gi'); if (!it) return; const k = +it.dataset.k;
+      const m = e.target.closest('[data-gm]');
+      if (m) { moveIdx(arr, k, k + +m.dataset.gm); paint(); }
+      else if (e.target.closest('[data-gc]')) { moveIdx(arr, k, 0); paint(); }
+      else if (e.target.closest('[data-gd]')) { arr.splice(k, 1); paint(); }
+    };
+    const take = async files => {
+      files = [...files].filter(f => /^image\//.test(f.type)); if (!files.length) return;
+      let n = 0;
+      for (const f of files) { try { arr.push(await processImage(f, max)); n++; paint(); } catch (e) { toast(e.message, true); } }
+      if (n > 1) toast('اتضافت ' + n + ' صور ✓');
+    };
+    $('[data-add]', el).onclick = () => fi.click();
+    fi.onchange = async () => { await take(fi.files); fi.value = ''; };
+    $('[data-addurls]', el).onclick = () => {
+      const ta = $('[data-urls]', el), u = ta.value.split(/\s+/).map(x => x.trim()).filter(x => /^https?:\/\//i.test(x));
+      if (!u.length) { toast('الصق رابط صورة واحد على الأقل (يبدأ بـ https://)', true); return; }
+      u.forEach(x => { if (!arr.includes(x)) arr.push(x); }); ta.value = ''; paint();
+    };
+    el.ondragover = e => { e.preventDefault(); el.classList.add('over'); }; el.ondragleave = () => el.classList.remove('over');
+    el.ondrop = e => { e.preventDefault(); el.classList.remove('over'); take(e.dataTransfer.files); };
+    paint();
+  }
+
   /* ---------- state / bar ---------- */
   function updateBar() {
     const d = isDirty();
@@ -146,7 +193,7 @@
   function previewData() {
     const c = JSON.parse(JSON.stringify(S));
     const fix = p => (p && imgs.has(p)) ? imgs.get(p).dataUrl : p;
-    c.hero.photo = fix(c.hero.photo); c.projects.forEach(p => p.image = fix(p.image));
+    c.hero.photo = fix(c.hero.photo); c.projects.forEach(p => { p.images = imgList(p).map(fix); p.image = p.images[0] || ''; });
     return c;
   }
   function pushPreview() {
@@ -157,7 +204,7 @@
   addEventListener('beforeunload', e => { if (isDirty()) { e.preventDefault(); e.returnValue = ''; } });
 
   /* ---------- publish ---------- */
-  const allImages = () => [S.hero.photo].concat(S.projects.map(p => p.image)).filter(Boolean);
+  const allImages = () => [S.hero.photo].concat(...S.projects.map(imgList)).filter(Boolean);
   async function publish() {
     if (busy || !isDirty()) return;
     busy = true; updateBar();
@@ -204,6 +251,8 @@
     const tips = [];
     if (!S.hero.photo) tips.push(['user', 'لسه مفيش صورة شخصية — الموقع بيعرض حرف بدلها.', 'content', 'أضف صورة']);
     S.categories.forEach(c => { if (!P.some(p => p.category === c.id && p.visible !== false)) tips.push(['folder', 'قسم «' + c.name + '» مفيهوش أعمال ظاهرة.', 'works', 'أضف عمل']); });
+    const one = P.filter(p => p.visible !== false && imgList(p).length < 2 && (S.categories.find(c => c.id === p.category) || {}).type !== 'video').length;
+    if (one) tips.push(['image', one + ' عمل فيهم صورة واحدة بس — أضف باقي صور العمل عشان يظهر كأنه كتالوج كامل.', 'works', 'راجعها']);
     if (hid) tips.push(['eyeoff', hid + ' عمل مخفي عن الزوار.', 'works', 'راجعها']);
     if (!S.stats.length) tips.push(['star', 'تقدر تضيف أرقام (سنين خبرة، عدد عملاء…) تظهر بشكل جذاب في الموقع.', 'content', 'أضف أرقام']);
     if (!S.meta.description) tips.push(['globe', 'اكتب وصف لمحركات البحث (SEO).', 'look', 'اكتبه']);
@@ -217,9 +266,9 @@
     const q = flt.q.toLowerCase();
     const rows = S.projects.map((p, i) => [p, i]).filter(([p]) => (flt.cat === 'all' || p.category === flt.cat) && (!q || (p.title + ' ' + p.desc + ' ' + p.tag).toLowerCase().includes(q)));
     if (!rows.length) return '<div class="empty">' + (S.projects.length ? 'مفيش نتائج.' : 'لسه مفيش أعمال. اضغط «إضافة عمل».') + '</div>';
-    return rows.map(([p, i], k) => '<div class="row' + (p.visible === false ? ' hid' : '') + '" data-i="' + i + '"><span class="grip" title="اسحب لإعادة الترتيب">' + I('grip') + '</span>' + '<div class="th">' + (p.image ? '<img src="' + esc(imgSrc(p.image)) + '" alt="" onerror="this.remove()">' : I(catIcon(p.category))) + '</div>' +
+    return rows.map(([p, i], k) => '<div class="row' + (p.visible === false ? ' hid' : '') + '" data-i="' + i + '"><span class="grip" title="اسحب لإعادة الترتيب">' + I('grip') + '</span>' + '<div class="th">' + (imgList(p)[0] ? '<img src="' + esc(imgSrc(imgList(p)[0])) + '" alt="" onerror="this.remove()">' : I(catIcon(p.category))) + '</div>' +
       '<div class="rt"><b dir="auto">' + esc(p.title || 'بدون عنوان') + '</b><small>' + esc(catName(p.category)) + '</small></div>' +
-      (p.featured ? '<span class="badge gold">مميّز</span>' : '') + (p.tag ? '<span class="badge">' + esc(p.tag) + '</span>' : '') + (p.visible === false ? '<span class="badge">مخفي</span>' : '') +
+      (imgList(p).length > 1 ? '<span class="badge">' + imgList(p).length + ' صور</span>' : '') + (p.featured ? '<span class="badge gold">مميّز</span>' : '') + (p.tag ? '<span class="badge">' + esc(p.tag) + '</span>' : '') + (p.visible === false ? '<span class="badge">مخفي</span>' : '') +
       '<div class="acts"><button class="ib" data-act="up" data-i="' + i + '" aria-label="فوق" ' + (k === 0 ? 'disabled' : '') + '>' + I('up') + '</button><button class="ib" data-act="down" data-i="' + i + '" aria-label="تحت" ' + (k === rows.length - 1 ? 'disabled' : '') + '>' + I('down') + '</button>' +
       '<button class="ib" data-act="vis" data-i="' + i + '" aria-label="إظهار/إخفاء" title="إظهار/إخفاء">' + I(p.visible === false ? 'eyeoff' : 'eye') + '</button><button class="ib" data-act="editWork" data-i="' + i + '" aria-label="تعديل" title="تعديل">' + I('edit') + '</button><button class="ib" data-act="dup" data-i="' + i + '" aria-label="نسخ" title="نسخ">' + I('copy') + '</button><button class="ib bad" data-act="delWork" data-i="' + i + '" aria-label="حذف" title="حذف">' + I('trash') + '</button></div></div>').join('');
   }
@@ -230,21 +279,23 @@
   function editWork(i) {
     if (!S.categories.length) { toast('أضف قسم الأول من تبويب «الأقسام».', true); return; }
     const isNew = i < 0;
-    const p = isNew ? { id: uid('p'), category: flt.cat !== 'all' ? flt.cat : S.categories[0].id, title: '', desc: '', link: '', image: '', tag: '', visible: true, featured: false } : Object.assign({}, S.projects[i]);
+    const p = isNew ? { id: uid('p'), category: flt.cat !== 'all' ? flt.cat : S.categories[0].id, title: '', desc: '', link: '', image: '', images: [], tag: '', visible: true, featured: false } : Object.assign({}, S.projects[i]);
+    let gal = imgList(p).slice();
     const d = $('#dlg');
     d.innerHTML = '<form method="dialog" id="wf"><div class="dh"><h2>' + (isNew ? 'إضافة عمل جديد' : 'تعديل العمل') + '</h2><button type="button" class="ib" id="x" aria-label="إغلاق">' + I('x') + '</button></div><div class="db">' +
       '<label>العنوان<input id="w_t" required dir="auto" value="' + esc(p.title) + '"></label>' +
       '<div class="g2"><label>القسم<select id="w_c">' + S.categories.map(c => '<option value="' + esc(c.id) + '"' + (c.id === p.category ? ' selected' : '') + '>' + esc(c.name) + '</option>').join('') + '</select></label><label>وسم قصير (اختياري)<input id="w_g" placeholder="مثلًا: منيو، Android" value="' + esc(p.tag) + '"></label></div>' +
       '<label>الرابط (Behance / يوتيوب / متجر…)<input id="w_l" dir="ltr" placeholder="https://" value="' + esc(p.link) + '"></label>' +
       '<label>وصف قصير (اختياري)<textarea id="w_d" rows="2">' + esc(p.desc) + '</textarea></label>' +
-      imageField('w_img', 'الصورة', p.image, false) +
+      galleryField('w_gal') +
       '<div style="height:18px"></div><label class="sw"><input type="checkbox" id="w_v"' + (p.visible !== false ? ' checked' : '') + '>ظاهر في الموقع</label><label class="sw"><input type="checkbox" id="w_f"' + (p.featured ? ' checked' : '') + '>عمل مميّز (كارت أكبر)</label></div>' +
       '<div class="df"><button class="btn primary" type="submit">' + I('check') + ' حفظ</button><button class="btn ghost" type="button" id="cx">إلغاء</button></div></form>';
     d.onclose = null;
-    bindImageField($('#w_img', d), 1600, v => { p.image = v; });
+    bindGallery($('#w_gal', d), gal, 1600, v => { p.images = v; });
     const close = () => d.close(); $('#x', d).onclick = close; $('#cx', d).onclick = close;
     $('#wf', d).onsubmit = e => {
       e.preventDefault();
+      p.images = gal.slice(); p.image = p.images[0] || '';
       Object.assign(p, { title: $('#w_t').value.trim(), category: $('#w_c').value, tag: $('#w_g').value.trim(), link: $('#w_l').value.trim(), desc: $('#w_d').value.trim(), visible: $('#w_v').checked, featured: $('#w_f').checked });
       if (isNew) S.projects.unshift(p); else S.projects[i] = p;
       d.close(); touch(); if (view === 'works') { $('#plist').innerHTML = listWorks(); } else go('works');
