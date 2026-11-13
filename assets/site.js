@@ -51,24 +51,87 @@
     x.meta = x.meta || {}; x.theme = x.theme || {}; x.hero = x.hero || {}; x.about = x.about || {};
     x.contact = x.contact || {}; x.contact.socials = x.contact.socials || [];
     ['stats', 'skills', 'categories', 'projects'].forEach(k => { x[k] = Array.isArray(x[k]) ? x[k] : []; });
+    x.projects.forEach((p, k) => { if (p && !p.id) p.id = 'x' + k; });
     return x;
   }
 
-  function card(p) {
-    const c = catOf(p.category), src = img(p.image), href = link(p.link);
-    const hasLink = href !== '#';
+  function card(p, i) {
+    const c = catOf(p.category), src = img(p.image);
     const media = '<div class="media">' +
-      (src ? '<img loading="lazy" decoding="async" src="' + E(src) + '" alt="' + E(p.title) + '">' : '') +
-      (src ? '' : '<div class="ph">' + ic(c.icon) + '</div>') +
+      (src ? '<img loading="lazy" decoding="async" src="' + E(src) + '" alt="' + E(p.title) + '">' : '<div class="ph">' + ic(c.icon) + '</div>') +
+      '<span class="cat-b">' + ic(c.icon) + ' ' + E(c.name) + '</span>' +
+      '<span class="idx">' + String(i + 1).padStart(2, '0') + '</span>' +
       (c.type === 'video' ? '<div class="pl"><span>' + ic('play') + '</span></div>' : '') +
-      (hasLink ? '<span class="open">' + (c.type === 'video' ? 'شغّل' : 'شوف المشروع') + ' ' + ic('ext') + '</span>' : (src ? '<span class="open">تكبير ' + ic('image') + '</span>' : '')) +
       '</div>';
-    const body = '<div class="cb">' + (p.tag ? '<span class="tg">' + E(p.tag) + '</span>' : '') + '<h3 dir="auto">' + E(p.title) + '</h3>' + (p.desc ? '<p>' + E(p.desc) + '</p>' : '') + '</div>';
-    const cls = 'card' + (p.featured ? ' feat' : '');
-    if (hasLink) return '<a class="' + cls + '" href="' + E(href) + '"' + (ext(href) ? ' target="_blank" rel="noopener noreferrer"' : '') + '>' + media + body + '</a>';
-    if (src) return '<button type="button" class="' + cls + '" data-lb="' + E(src) + '" aria-label="تكبير: ' + E(p.title) + '">' + media + body + '</button>';
-    return '<div class="' + cls + '">' + media + body + '</div>';
+    const body = '<div class="cb">' + (p.tag ? '<span class="tg">' + E(p.tag) + '</span>' : '') + '<h3 dir="auto">' + E(p.title) + '</h3>' + (p.desc ? '<p>' + E(p.desc) + '</p>' : '') +
+      '<span class="go">' + (c.type === 'video' ? 'شاهد التفاصيل' : 'عرض التفاصيل') + ' ' + ic('arrowL') + '</span></div>';
+    return '<button type="button" class="card' + (p.featured ? ' feat' : '') + '" style="--i:' + i + '" data-p="' + E(p.id) + '" aria-label="' + E('تفاصيل: ' + p.title) + '">' + media + body + '</button>';
   }
+
+  /* ---------- صفحة تفاصيل المشروع ---------- */
+  let pv = null, pvCur = null, pvList = [], pvPush = false, pvFocus = null;
+  function pvHTML(p, i, n) {
+    const c = catOf(p.category), src = img(p.image), href = link(p.link), hasLink = href !== '#', isV = c.type === 'video';
+    const inner = (src ? '<img src="' + E(src) + '" alt="' + E(p.title) + '">' : '<div class="ph">' + ic(c.icon) + '</div>') + (isV ? '<div class="pl"><span>' + ic('play') + '</span></div>' : '');
+    let media;
+    if (isV && hasLink) media = '<a class="pv-media" href="' + E(href) + '" target="_blank" rel="noopener noreferrer" aria-label="تشغيل">' + inner + '</a>';
+    else if (src) media = '<button type="button" class="pv-media zoom" data-lb="' + E(src) + '" aria-label="تكبير الصورة">' + inner + '</button>';
+    else media = '<div class="pv-media">' + inner + '</div>';
+    const cta = hasLink ? '<div class="pv-act"><a class="btn primary" href="' + E(href) + '"' + (ext(href) ? ' target="_blank" rel="noopener noreferrer"' : '') + '>' + (isV ? 'شغّل الفيديو' : 'شوف المشروع كامل') + ' ' + ic('ext') + '</a></div>' : '';
+    const nav = n > 1 ? '<div class="pv-nav"><button type="button" class="pv-b" data-pn="-1">' + ic('arrowL') + ' السابق</button><span>' + (i + 1) + ' / ' + n + '</span><button type="button" class="pv-b" data-pn="1">التالي ' + ic('arrowL') + '</button></div>' : '';
+    return '<div class="pv-bg" data-pclose></div><article class="pv-box">' +
+      '<button type="button" class="pv-x" data-pclose aria-label="إغلاق">' + ic('x') + '</button>' + media +
+      '<div class="pv-info"><div class="pv-meta">' + (p.tag ? '<span class="tg">' + E(p.tag) + '</span>' : '') + '<span class="pv-cat">' + ic(c.icon) + ' ' + E(c.name) + '</span></div>' +
+      '<h2 dir="auto">' + E(p.title) + '</h2>' + (p.desc ? '<p class="pv-d">' + E(p.desc) + '</p>' : '') + cta + nav + '</div></article>';
+  }
+  function pvOpen(id) {
+    let list = shown().filter(p => cur === 'all' || p.category === cur);
+    let i = list.findIndex(p => p.id === id);
+    if (i < 0) { list = shown(); i = list.findIndex(p => p.id === id); }
+    if (i < 0) return;
+    pvList = list; pvCur = id;
+    if (!pv) {
+      pv = d.createElement('div'); pv.className = 'pv'; pv.setAttribute('role', 'dialog'); pv.setAttribute('aria-modal', 'true');
+      pvFocus = d.activeElement; d.body.appendChild(pv); root.classList.add('pvo');
+    }
+    pv.setAttribute('aria-label', list[i].title || '');
+    pv.innerHTML = pvHTML(list[i], i, list.length);
+    const bx = pv.querySelector('.pv-box'); if (bx) bx.scrollTop = 0;
+    const x = pv.querySelector('.pv-x'); if (x) x.focus({ preventScroll: true });
+    const h = '#p-' + encodeURIComponent(id);
+    if (location.hash !== h) { try { if (pvPush) history.replaceState({ pv: 1 }, '', h); else { history.pushState({ pv: 1 }, '', h); pvPush = true; } } catch (e) {} }
+  }
+  function pvStep(dir) {
+    if (!pv || pvList.length < 2) return;
+    const i = pvList.findIndex(p => p.id === pvCur), n = pvList.length;
+    pvOpen(pvList[(i + dir + n) % n].id);
+  }
+  function pvClose(fromPop) {
+    if (!pv) return;
+    pv.remove(); pv = null; root.classList.remove('pvo');
+    if (!fromPop) {
+      if (pvPush) { try { history.back(); } catch (e) {} }
+      else if (/^#p-/.test(location.hash)) { try { history.replaceState(null, '', '#work'); } catch (e) {} }
+    }
+    pvPush = false;
+    if (pvFocus && pvFocus.focus && d.contains(pvFocus)) pvFocus.focus({ preventScroll: true });
+  }
+  addEventListener('popstate', () => {
+    const m = /^#p-(.+)$/.exec(location.hash);
+    if (m) { if (D) pvOpen(decodeURIComponent(m[1])); } else if (pv) pvClose(true);
+  });
+  d.addEventListener('keydown', e => {
+    if (!pv || d.querySelector('.lb')) return;
+    if (e.key === 'Escape') pvClose();
+    else if (e.key === 'ArrowLeft') pvStep(1);
+    else if (e.key === 'ArrowRight') pvStep(-1);
+  });
+  /* لمعة بتتحرك مع الماوس على الكروت */
+  d.addEventListener('pointermove', e => {
+    const c = e.target.closest && e.target.closest('.card'); if (!c) return;
+    const r = c.getBoundingClientRect();
+    c.style.setProperty('--mx', (e.clientX - r.left) + 'px'); c.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  }, { passive: true });
 
   function grid() {
     const list = shown().filter(p => cur === 'all' || p.category === cur);
@@ -182,6 +245,9 @@
       }
       return;
     }
+    if (t.closest('[data-pclose]')) { pvClose(); return; }
+    const pn = t.closest('[data-pn]'); if (pn) { pvStep(+pn.dataset.pn); return; }
+    const pp = t.closest('[data-p]'); if (pp) { pvOpen(pp.dataset.p); return; }
     if (t.closest('#menu a')) { d.getElementById('menu').classList.remove('open'); const b = d.querySelector('.burger'); if (b) b.setAttribute('aria-expanded', 'false'); }
     const f = t.closest('[data-f]'); if (f) { setFilter(f.dataset.f); return; }
     const c = t.closest('[data-cat]');
@@ -198,7 +264,7 @@
   /* لو صورة مش بتحمّل نرجّع الأيقونة بدلها */
   d.addEventListener('error', e => {
     const t = e.target;
-    if (t && t.tagName === 'IMG' && t.closest('.media')) { const m = t.parentNode; t.remove(); const pr = D.projects.find(p => img(p.image) === t.getAttribute('src')); if (!m.querySelector('.ph')) m.insertAdjacentHTML('afterbegin', '<div class="ph">' + ic(pr ? catOf(pr.category).icon : 'image') + '</div>'); }
+    if (t && t.tagName === 'IMG' && t.closest('.media, .pv-media')) { const m = t.parentNode; t.remove(); const pr = D.projects.find(p => img(p.image) === t.getAttribute('src')); if (!m.querySelector('.ph')) m.insertAdjacentHTML('afterbegin', '<div class="ph">' + ic(pr ? catOf(pr.category).icon : 'image') + '</div>'); }
   }, true);
 
   /* ---------- boot ---------- */
@@ -210,6 +276,7 @@
     const ot = d.querySelector('meta[property="og:title"]'); if (ot) ot.content = d.title;
     const od = d.querySelector('meta[property="og:description"]'); if (od && D.meta.description) od.content = D.meta.description;
     build();
+    if (!PREVIEW) { const m = /^#p-(.+)$/.exec(location.hash); if (m) pvOpen(decodeURIComponent(m[1])); }
   }
   function fail() {
     app.innerHTML = '<div class="boot"><div style="text-align:center;padding:24px"><h2 style="margin-bottom:10px">مقدرتش أحمّل محتوى الموقع</h2><p>تأكد إن ملف data/site.js موجود جنب الصفحة.</p></div></div>';
