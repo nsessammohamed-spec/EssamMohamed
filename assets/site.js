@@ -60,6 +60,15 @@
     if (tc) tc.content = m === 'light' ? '#FAF7F0' : '#0B0A08';
   }
 
+  /* لو الوضع "حسب جهاز الزائر" ومحدّش اختار بإيده: تابع تغيير إعداد الجهاز لحظيًا */
+  try {
+    matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
+      let sv = null; try { sv = localStorage.getItem('sx.mode'); } catch (e) {}
+      if (sv === 'dark' || sv === 'light' || !D || !D.theme || D.theme.mode !== 'auto') return;
+      theme(); const b = d.querySelector('[data-act=mode]'); if (b) b.innerHTML = ic(root.dataset.mode === 'light' ? 'moon' : 'sun');
+    });
+  } catch (e) {}
+
   /* ---------- helpers ---------- */
   const splitName = n => {
     const w = String(n || '').trim().split(/\s+/);
@@ -243,7 +252,10 @@
   }
 
   /* ---------- behaviours ---------- */
+  let lio = null;
   function reveal() {
+    const cx = d.querySelector('.cx');
+    if (cx && 'IntersectionObserver' in window) { if (lio) lio.disconnect(); lio = new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle('live', e.isIntersecting))); lio.observe(cx); }
     const els = [].slice.call(d.querySelectorAll('.rv'));
     if (!('IntersectionObserver' in window)) { els.forEach(e => e.classList.add('in')); return; }
     if (io) io.disconnect();
@@ -367,6 +379,7 @@
       if (a.dataset.act === 'mode') {
         const next = root.dataset.mode === 'light' ? 'dark' : 'light';
         try { localStorage.setItem('sx.mode', next); } catch (x) {}
+        root.classList.add('theming'); clearTimeout(root._tm); root._tm = setTimeout(() => root.classList.remove('theming'), 400);
         theme(); a.innerHTML = ic(next === 'light' ? 'moon' : 'sun');
       }
       if (a.dataset.act === 'menu') {

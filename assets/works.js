@@ -41,6 +41,15 @@
     if (tc) tc.content = m === 'light' ? '#FAF7F0' : '#0B0A08';
   }
 
+  /* لو الوضع "حسب جهاز الزائر" ومحدّش اختار بإيده: تابع تغيير إعداد الجهاز لحظيًا */
+  try {
+    matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
+      let sv = null; try { sv = localStorage.getItem('sx.mode'); } catch (e) {}
+      if (sv === 'dark' || sv === 'light' || !D || !D.theme || D.theme.mode !== 'auto') return;
+      theme(); const b = d.querySelector('[data-act=mode]'); if (b) b.innerHTML = ic(root.dataset.mode === 'light' ? 'moon' : 'sun');
+    });
+  } catch (e) {}
+
   /* ---------- data ---------- */
   function norm(x) {
     x = x || {};
@@ -298,6 +307,7 @@
       if (a.dataset.act === 'mode') {
         const next = root.dataset.mode === 'light' ? 'dark' : 'light';
         try { localStorage.setItem('sx.mode', next); } catch (x) {}
+        root.classList.add('theming'); clearTimeout(root._tm); root._tm = setTimeout(() => root.classList.remove('theming'), 400);
         theme(); a.innerHTML = ic(next === 'light' ? 'moon' : 'sun');
       }
       if (a.dataset.act === 'menu') { const m = d.getElementById('menu'), o = m.classList.toggle('open'); a.setAttribute('aria-expanded', String(o)); }

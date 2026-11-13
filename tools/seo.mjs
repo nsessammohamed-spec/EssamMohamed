@@ -54,6 +54,7 @@ const faq = (D.faq || []).length ? {
 const ld = o => '<script type="application/ld+json">' + JSON.stringify(o).replace(/</g, '\\u003c') + '</script>';
 
 const head = [
+  '<meta name="sx-mode" content="' + E(['light', 'auto'].includes(D.theme?.mode) ? D.theme.mode : 'dark') + '">',
   '<meta name="robots" content="index,follow,max-image-preview:large">',
   '<meta name="author" content="' + E(D.hero?.name) + '">',
   '<meta property="og:locale" content="ar_AR">',
@@ -115,6 +116,7 @@ if (fs.existsSync(path.join(root, 'works.html'))) {
       { '@type': 'ListItem', position: 2, name: 'أعمالي', item: wUrl }]
   } : null;
   const wHead = [
+    '<meta name="sx-mode" content="' + E(['light', 'auto'].includes(D.theme?.mode) ? D.theme.mode : 'dark') + '">',
     '<meta name="robots" content="index,follow,max-image-preview:large">',
     '<meta name="author" content="' + E(D.hero?.name) + '">',
     '<meta property="og:site_name" content="' + E(D.hero?.name) + '">',

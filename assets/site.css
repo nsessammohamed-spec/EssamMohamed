@@ -303,15 +303,9 @@ footer.f{margin-top:100px;border-top:1px solid var(--line);padding:30px 0 40px;c
 .prog{position:fixed;inset:0 0 auto 0;height:3px;z-index:60;pointer-events:none;background:linear-gradient(90deg,var(--accent),var(--accent2));transform-origin:100% 50%;transform:scaleX(var(--p,0))}
 .menu a.on{color:var(--ink);background:rgba(var(--accent-rgb),.14)}
 
-/* عناوين الأقسام في المنتصف + خط قلم بيترسم تحتها (نفس روح الهيرو) */
+/* عناوين الأقسام في المنتصف */
 .sh.ctr{justify-items:center;text-align:center}
 .sh.ctr p{margin-inline:auto}
-.sh.ctr h2::after{content:"";display:block;width:132px;height:14px;margin:16px auto 0;background:linear-gradient(90deg,var(--accent2),var(--accent));
-  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 132 14'%3E%3Cpath d='M3 7H129' fill='none' stroke='%23000' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;
-  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 132 14'%3E%3Cpath d='M3 7H129' fill='none' stroke='%23000' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;
-  clip-path:inset(0 0 0 100%);transition:clip-path .9s var(--ease) .35s}
-.sh.ctr.in h2::after{clip-path:inset(0)}
-
 /* ---------- صناديق "بشتغل في إيه؟": محتوى في المنتصف + تدرج لوني لكل صندوق ---------- */
 .svc{grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:22px;perspective:1100px}
 .svc-w{display:flex}
@@ -458,12 +452,6 @@ a.cc:hover,.cc:has(a:hover){transform:translateY(-4px);border-color:rgba(var(--c
     conic-gradient(from var(--ang),rgba(var(--accent-rgb),.22),rgba(var(--accent-rgb),.95) 12%,rgba(var(--accent-rgb),.22) 30%,rgba(var(--accent-rgb),.22) 70%,rgba(var(--accent-rgb),.95) 82%,rgba(var(--accent-rgb),.22)) border-box;
   animation:spin 9s linear infinite}
 @keyframes spin{to{--ang:360deg}}
-.cx h2::after{content:"";display:block;width:150px;height:14px;margin:16px auto 0;background:linear-gradient(90deg,var(--accent2),var(--accent));
-  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 132 14'%3E%3Cpath d='M3 7H129' fill='none' stroke='%23000' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;
-  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 132 14'%3E%3Cpath d='M3 7H129' fill='none' stroke='%23000' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;
-  clip-path:inset(0 0 0 100%);transition:clip-path .9s var(--ease) .35s}
-.cx.in h2::after{clip-path:inset(0)}
-
 .stp{list-style:none;margin:38px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;text-align:start}
 .stp li{--c:201,162,75;display:flex;gap:14px;align-items:flex-start;padding:18px 20px;border-radius:20px;border:1px solid rgba(var(--c),.3);background:linear-gradient(160deg,rgba(var(--c),.14),transparent 70%),color-mix(in srgb,var(--bg) 40%,var(--surface));transition:transform .3s var(--ease),border-color .25s}
 .stp li:hover{transform:translateY(-4px);border-color:rgba(var(--c),.7)}
@@ -599,3 +587,43 @@ section.s{padding-top:var(--design-section-space,110px)}
 .name{font-size:calc(clamp(30px,5vw,66px) * var(--design-heading-scale,1))}
 .sh h2,.cx h2{font-size:calc(clamp(34px,5vw,58px) * var(--design-heading-scale,1))}
 .card:hover{box-shadow:0 34px 50px -34px rgba(var(--accent-rgb),calc(.45 * var(--design-shadow,1)))}
+
+/* =====================================================================
+   v5: وضع فاتح/داكن أنضف + أنيميشن أخف (بيتحمّل آخر ملف عشان يغلّب اللي قبله)
+   ===================================================================== */
+/* تبديل الوضع: كل العناصر بتتغيّر بنعومة مع بعض بدل ما تقفز */
+html.theming,html.theming *,html.theming *::before,html.theming *::after{transition:background-color .28s ease,color .28s ease,border-color .28s ease,fill .28s ease,stroke .28s ease,box-shadow .28s ease}
+/* الحبيبات في الفاتح كانت بتوسّخ الخلفية */
+:root[data-mode=light]{--grain:.03}
+
+/* الظهور أثناء السكرول: حركة أقصر وأخف، وتأخير مش بيزيد عن .3 ثانية */
+.js .rv{transform:translateY(16px);transition:opacity .55s var(--ease),transform .55s var(--ease);transition-delay:min(var(--d,0s),.3s)}
+.hero .rv{transition-delay:calc(min(var(--d,0s),.3s) + .05s)}
+.js .rv.in{transform:none}
+@keyframes cardIn{from{opacity:0;transform:translateY(14px) scale(.985)}}
+.grid.in .card,.grid.swap .card{animation:cardIn .45s var(--ease) both;animation-delay:min(calc(var(--i,0) * 45ms),.27s)}
+.grid.swap{animation-duration:.3s}
+@keyframes wkup{from{opacity:0;transform:translateY(16px)}}
+.wa{animation-duration:.6s}
+
+/* الهيرو: حركة الماوس بـ translate (GPU) بدل left/top اللي بتعمل reflow مع كل حركة */
+.hero-glow{left:0;top:0;translate:calc(var(--gx,0px) - 50%) calc(var(--gy,0px) - 50%);transition:opacity .6s,translate .5s ease-out}
+.hero-ph .arch{left:0;top:0;translate:calc(var(--nx,0) * -14px) calc(var(--ny,0) * -9px);transition:translate .5s ease-out}
+/* البادجات الطايرة: حركة أهدأ، وتتوقف على الموبايل */
+@keyframes bob{50%{transform:translateY(-7px)}}
+.fb{animation-duration:8s}
+.fb1{animation-duration:9s}.fb2{animation-duration:8.5s}.fb3{animation-duration:9.5s}
+@media(hover:none){.fb{animation:none}}
+
+/* قسم التواصل: الإضاءة ثابتة، والإطار الدوّار بيشتغل بس وهو ظاهر على الشاشة */
+.cx::before,.cx::after{animation:none}
+.cx{animation-duration:14s;animation-play-state:paused}
+.cx.live{animation-play-state:running}
+
+/* ظل خفيف بعرض الصفحة كلها تحت عناوين الأقسام (بدل الخط القديم) */
+:root{--hs:rgba(var(--accent-rgb),.10)}
+:root[data-mode=light]{--hs:rgba(27,24,16,.075)}
+.sh.ctr{position:relative}
+.sh.ctr::after{content:"";position:absolute;z-index:-1;pointer-events:none;left:50%;width:100vw;transform:translateX(-50%);top:calc(100% + 12px);height:46px;
+  background:linear-gradient(to bottom,var(--hs) 0%,color-mix(in srgb,var(--hs) 55%,transparent) 30%,color-mix(in srgb,var(--hs) 18%,transparent) 65%,transparent 100%)}
+@media(max-width:860px){.sh.ctr::after{top:calc(100% + 8px);height:32px}}
