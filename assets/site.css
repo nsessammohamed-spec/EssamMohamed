@@ -482,3 +482,22 @@ a.cc:hover,.cc:has(a:hover){transform:translateY(-4px);border-color:rgba(var(--c
 .ct.nf{grid-template-columns:1fr}
 .ct.nf .ct-s{flex-direction:row;flex-wrap:wrap}
 .ct.nf .cc{flex:1 1 260px}
+
+/* =====================================================================
+   الأسئلة الشائعة
+   ===================================================================== */
+.faq{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.fq{--c:201,162,75;border-radius:20px;border:1px solid rgba(var(--c),.28);background:linear-gradient(160deg,rgba(var(--c),.10),transparent 65%),var(--surface);transition:border-color .25s,box-shadow .35s}
+.fq:hover{border-color:rgba(var(--c),.5)}
+.fq[open]{border-color:rgba(var(--c),.65);box-shadow:0 24px 40px -30px rgba(var(--c),.6)}
+.fq summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;font-family:var(--f-head);font-weight:700;font-size:19px;line-height:1.5;border-radius:20px}
+.fq summary::-webkit-details-marker{display:none}
+.fq .ch{flex:none;width:34px;height:34px;border-radius:50%;position:relative;background:rgba(var(--c),.16);border:1px solid rgba(var(--c),.45);transition:background .25s}
+.fq .ch::before,.fq .ch::after{content:"";position:absolute;left:9px;right:9px;top:50%;height:2px;margin-top:-1px;background:rgb(var(--c));border-radius:2px;transition:transform .35s var(--ease)}
+.fq .ch::after{transform:rotate(90deg)}
+.fq[open] .ch{background:rgba(var(--c),.32)}
+.fq[open] .ch::after{transform:rotate(0)}
+.fa{padding:0 24px 22px}
+.fq[open] .fa{animation:faIn .4s var(--ease)}
+@keyframes faIn{from{opacity:0;transform:translateY(-8px)}}
+.fa p{color:var(--muted);font-size:17.5px;line-height:1.9;max-width:64ch}

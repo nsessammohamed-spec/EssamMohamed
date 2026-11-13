@@ -15,6 +15,9 @@
   const PAL = ['212,166,74', '140,170,110', '204,122,107', '111,163,160', '170,140,170'];
   const rgbOf = (c, i) => { const m = /^#([0-9a-f]{6})$/i.exec((c && c.color) || ''); return m ? h2r(m[1]).join(',') : PAL[i % PAL.length]; };
   const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /* كل النصوص الثابتة — بتتعدل من لوحة التحكم (تاب النصوص والأقسام) */
+  const LB = {"navWork": "أعمالي", "navServices": "خدماتي", "navAbout": "عني", "navFaq": "أسئلة", "navContact": "تواصل", "servicesTitle": "بشتغل في إيه؟", "servicesSub": "اختار المجال وشوف شغلي فيه.", "svcSee": "شوفهم", "svcSoon": "قريبًا", "workTitle": "أعمالي", "workSub": "اضغط على أي عمل تشوفه بالحجم الكامل.", "workMore": "شوف صفحة الأعمال كاملة", "filterAll": "الكل", "cardGoImg": "شوف العمل", "cardGoVid": "شاهد العمل", "emptyWorks": "لسه مفيش أعمال.", "aboutSkills": "الأدوات اللي بشتغل بيها", "aboutSpecs": "التخصصات", "aboutBtn1": "كلمني", "aboutBtn2": "كل أعمالي", "factWorks": "أعمال", "factCats": "مجالات", "factTools": "أدوات", "faqTitle": "أسئلة شائعة", "faqSub": "إجابات سريعة قبل ما نتكلم.", "formName": "اسمك", "formNamePh": "اكتب اسمك", "formSvc": "محتاج إيه؟", "formWhen": "الميعاد المطلوب", "formMsg": "تفاصيل شغلك", "formPreview": "الرسالة اللي هتتبعت", "formPreviewEmpty": "رسالتك هتظهر هنا وانت بتكتب.", "msgSvc": "محتاج:", "msgWhen": "الميعاد:", "mailSubject": "طلب شغل", "ccAvail": "متاح دلوقتي", "ccWa": "واتساب", "ccMail": "الإيميل", "ccCopy": "نسخ", "toastCopied": "اتنسخ الإيميل ✓", "toastNeed": "اكتب تفاصيل شغلك الأول", "toastReady": "اتجهّزت الرسالة ✓", "footUp": "للأعلى"};
+  const T = k => { const v = D && D.labels && D.labels[k]; return v != null && String(v).trim() !== '' ? String(v).trim() : LB[k]; };
 
   /* ---------- theme ---------- */
   const h2r = h => { h = h.replace('#', ''); if (h.length === 3) h = h.split('').map(c => c + c).join(''); const n = parseInt(h, 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
@@ -53,8 +56,8 @@
   function norm(x) {
     x = x || {};
     x.meta = x.meta || {}; x.theme = x.theme || {}; x.hero = x.hero || {}; x.about = x.about || {};
-    x.contact = x.contact || {}; x.contact.socials = x.contact.socials || [];
-    ['stats', 'skills', 'categories', 'projects'].forEach(k => { x[k] = Array.isArray(x[k]) ? x[k] : []; });
+    x.contact = x.contact || {}; x.contact.socials = x.contact.socials || []; x.labels = x.labels || {}; x.show = x.show || {};
+    ['stats', 'skills', 'categories', 'projects', 'faq'].forEach(k => { x[k] = Array.isArray(x[k]) ? x[k] : []; });
     x.projects.forEach((p, k) => { if (p && !p.id) p.id = 'x' + k; });
     return x;
   }
@@ -68,83 +71,89 @@
       (c.type !== 'video' && all.length > 1 ? '<span class="cnt">' + ic('layers') + all.length + ' صور</span>' : '') +
       (c.type === 'video' ? '<div class="pl"><span>' + ic('play') + '</span></div>' : '') + '</div>';
     const body = '<div class="cb">' + (p.tag ? '<span class="tg">' + E(p.tag) + '</span>' : '') + '<h3 dir="auto">' + E(p.title) + '</h3>' + (p.desc ? '<p dir="auto">' + E(p.desc) + '</p>' : '') +
-      '<span class="go">' + (c.type === 'video' ? 'شاهد العمل' : 'شوف العمل') + ' ' + ic('arrowL') + '</span></div>';
+      '<span class="go">' + E(T(c.type === 'video' ? 'cardGoVid' : 'cardGoImg')) + ' ' + ic('arrowL') + '</span></div>';
     return '<a class="card' + (p.featured ? ' feat' : '') + '" style="--i:' + i + ';--c:' + rgbOf(c, Math.max(0, D.categories.findIndex(x => x.id === p.category))) + '" href="works.html#w-' + encodeURIComponent(p.id) + '" aria-label="' + E(p.title) + '">' + media + body + '</a>';
   }
 
   function grid() {
     const list = shown().filter(p => cur === 'all' || p.category === cur);
-    return list.length ? list.map(card).join('') : '<div class="empty">لسه مفيش أعمال.</div>';
+    return list.length ? list.map(card).join('') : '<div class="empty">' + E(T('emptyWorks')) + '</div>';
   }
 
   function build() {
     const H = D.hero, A = D.about, C = D.contact, P = shown();
     const [n1, n2] = splitName(H.name);
     const skills = D.skills.filter(Boolean);
-    let no = 0; const num = () => String(++no).padStart(2, '0');
+    let no = 0; const num = () => String(++no).padStart(2, '0'); const on = k => !(D.show && D.show[k] === false);
     const menu = [];
     const sections = [];
 
     if (D.stats.length) sections.push('<section class="s" style="padding-top:60px"><div class="wrap rv"><div class="stats">' +
       D.stats.map(s => '<div class="stat"><b>' + E(s.value) + '</b><span>' + E(s.label) + '</span></div>').join('') + '</div></div></section>');
 
-    if (D.categories.length) {
-      menu.push(['#services', 'خدماتي']);
-      sections.push('<section class="s" id="services"><div class="wrap"><div class="sh ctr rv"><span class="no">' + num() + '</span><h2>بشتغل في إيه؟</h2><p>اختار المجال وشوف شغلي فيه.</p></div><div class="svc">' +
+    if (on('services') && D.categories.length) {
+      menu.push(['#services', T('navServices')]);
+      sections.push('<section class="s" id="services"><div class="wrap"><div class="sh ctr rv"><span class="no">' + num() + '</span><h2>' + E(T('servicesTitle')) + '</h2><p>' + E(T('servicesSub')) + '</p></div><div class="svc">' +
         D.categories.map((c, i) => {
           const n = P.filter(p => p.category === c.id).length;
-          return '<div class="svc-w rv" style="--d:' + (i * .08) + 's"><button type="button" style="--c:' + rgbOf(c, i) + '" data-cat="' + E(c.id) + '"><span class="ico">' + ic(c.icon) + '</span><h3>' + E(c.name) + '</h3><p>' + E(c.desc) + '</p><em>' + (n ? n + ' ' + (n > 2 && n < 11 ? 'أعمال' : 'عمل') + ' · شوفهم' : 'قريبًا') + ' ' + ic('arrowL') + '</em></button></div>';
+          return '<div class="svc-w rv" style="--d:' + (i * .08) + 's"><button type="button" style="--c:' + rgbOf(c, i) + '" data-cat="' + E(c.id) + '"><span class="ico">' + ic(c.icon) + '</span><h3>' + E(c.name) + '</h3><p>' + E(c.desc) + '</p><em>' + (n ? n + ' ' + (n > 2 && n < 11 ? 'أعمال' : 'عمل') + ' · ' + E(T('svcSee')) : E(T('svcSoon'))) + ' ' + ic('arrowL') + '</em></button></div>';
         }).join('') + '</div></div></section>');
     }
 
-    if (P.length) {
-      menu.unshift(['#work', 'أعمالي']);
-      sections.push('<section class="s" id="work"><div class="wrap"><div class="sh ctr rv"><span class="no">' + num() + '</span><h2>أعمالي</h2><p>اضغط على أي عمل تشوفه بالحجم الكامل.</p></div>' +
+    if (on('work') && P.length) {
+      menu.unshift(['#work', T('navWork')]);
+      sections.push('<section class="s" id="work"><div class="wrap"><div class="sh ctr rv"><span class="no">' + num() + '</span><h2>' + E(T('workTitle')) + '</h2><p>' + E(T('workSub')) + '</p></div>' +
         (function () {
         const cs = D.categories.filter(c => P.some(p => p.category === c.id));
         if (cs.length < 2) return '';
-        return '<div class="filters ctr rv" role="group" aria-label="تصفية الأعمال">' + [['all', 'الكل', P.length]].concat(cs.map(c => [c.id, c.name, P.filter(p => p.category === c.id).length])).map(f => '<button type="button" class="fc" data-f="' + E(f[0]) + '" aria-pressed="' + (f[0] === 'all') + '">' + E(f[1]) + ' <small>' + f[2] + '</small></button>').join('') + '</div>';
-      })() + '<div class="grid rv" id="grid">' + grid() + '</div><div class="more rv"><a class="btn ghost" href="works.html">شوف صفحة الأعمال كاملة ' + ic('arrowL') + '</a></div></div></section>');
+        return '<div class="filters ctr rv" role="group" aria-label="تصفية الأعمال">' + [['all', T('filterAll'), P.length]].concat(cs.map(c => [c.id, c.name, P.filter(p => p.category === c.id).length])).map(f => '<button type="button" class="fc" data-f="' + E(f[0]) + '" aria-pressed="' + (f[0] === 'all') + '">' + E(f[1]) + ' <small>' + f[2] + '</small></button>').join('') + '</div>';
+      })() + '<div class="grid rv" id="grid">' + grid() + '</div><div class="more rv"><a class="btn ghost" href="works.html">' + E(T('workMore')) + ' ' + ic('arrowL') + '</a></div></div></section>');
     }
 
     const mine = (Array.isArray(A.photos) ? A.photos : []).map(img).filter(Boolean);
-    if (A.text || skills.length || mine.length) {
-      menu.push(['#about', 'عني']);
+    if (on('about') && (A.text || skills.length || mine.length)) {
+      menu.push(['#about', T('navAbout')]);
       const facts = (Array.isArray(A.facts) ? A.facts : []).filter(f => f && f.label && f.value);
-      if (D.categories.length) facts.push({ label: 'التخصصات', value: D.categories.map(c => c.name).join('، ') });
+      if (D.categories.length) facts.push({ label: T('aboutSpecs'), value: D.categories.map(c => c.name).join('، ') });
       sections.push('<section class="s" id="about"><div class="wrap"><div class="ab' + (mine.length ? '' : ' solo') + '">' +
         '<div class="ab-tx"><div class="sh rv"><h2>' + E(A.title || 'نبذة عني') + '</h2></div>' +
         '<p class="tx rv">' + E(ar(A.text)) + '</p>' +
         (facts.length ? '<dl class="facts rv">' + facts.map(f => '<div><dt>' + E(f.label) + '</dt><dd>' + E(ar(f.value)) + '</dd></div>').join('') + '</dl>' : '') +
-        (skills.length ? '<div class="skills rv"><h3>الأدوات اللي بشتغل بيها</h3>' + skills.map((s, k) => '<span class="sk" style="--c:' + PAL[k % PAL.length] + '">' + E(s) + '</span>').join('') + '</div>' : '') +
-        '<div class="cta rv"><a class="btn primary" href="#contact">كلمني ' + ic('arrowL') + '</a><a class="btn ghost" href="works.html">كل أعمالي</a></div></div>' +
+        (skills.length ? '<div class="skills rv"><h3>' + E(T('aboutSkills')) + '</h3>' + skills.map((s, k) => '<span class="sk" style="--c:' + PAL[k % PAL.length] + '">' + E(s) + '</span>').join('') + '</div>' : '') +
+        '<div class="cta rv"><a class="btn primary" href="#contact">' + E(T('aboutBtn1')) + ' ' + ic('arrowL') + '</a><a class="btn ghost" href="works.html">' + E(T('aboutBtn2')) + '</a></div></div>' +
         (mine.length ? '<div class="mine rv"><div class="mine-g n' + Math.min(mine.length, 5) + '">' + mine.slice(0, 5).map((u, i) => '<button type="button" class="mine-i" data-lb="' + E(u) + '" aria-label="تكبير الصورة ' + (i + 1) + '"><img loading="lazy" decoding="async" src="' + E(u) + '" alt="' + E(H.name) + ' — صورة ' + (i + 1) + '"></button>').join('') + '</div></div>' : '') +
         '</div></div></section>');
     }
 
+    const faq = (Array.isArray(D.faq) ? D.faq : []).filter(x => x && x.q && x.a);
+    if (on('faq') && faq.length) {
+      menu.push(['#faq', T('navFaq')]);
+      sections.push('<section class="s" id="faq"><div class="wrap"><div class="sh ctr rv"><h2>' + E(T('faqTitle')) + '</h2><p>' + E(T('faqSub')) + '</p></div><div class="faq">' +
+        faq.map((x, i) => '<details class="fq rv" name="faq" style="--d:' + (i * .06) + 's;--c:' + PAL[i % PAL.length] + '"><summary><span dir="auto">' + E(x.q) + '</span><i class="ch" aria-hidden="true"></i></summary><div class="fa"><p dir="auto">' + E(ar(x.a)) + '</p></div></details>').join('') + '</div></div></section>');
+    }
     const wa = String(C.whatsapp || '').replace(/\D/g, '');
     const CF = C.form || {}, showF = C.showForm !== false, whens = (Array.isArray(C.when) ? C.when : ['مستعجل', 'خلال أسبوع', 'مفيش استعجال']).map(x => String(x == null ? '' : x).trim()).filter(Boolean);
-    if (C.email || wa || C.socials.length) {
-      menu.push(['#contact', 'تواصل']);
+    if (on('contact') && (C.email || wa || C.socials.length)) {
+      menu.push(['#contact', T('navContact')]);
       sections.push('<section class="s" id="contact"><div class="wrap"><div class="cx rv"><h2>' + E(C.title || 'تواصل معايا') + '</h2>' + (C.text ? '<p>' + E(ar(C.text)) + '</p>' : '') +
         (C.steps && C.steps.length ? '<ol class="stp">' + C.steps.filter(x => x && x.t).map((x, i) => '<li style="--c:' + PAL[i % PAL.length] + '"><b>' + (i + 1) + '</b><div><h3>' + E(x.t) + '</h3>' + (x.d ? '<p>' + E(ar(x.d)) + '</p>' : '') + '</div></li>').join('') + '</ol>' : '') +
           '<div class="ct' + (showF ? '' : ' nf') + '">' + (showF ? ('<form class="cf" id="cf" data-g="' + E(CF.greeting || ('أهلاً ' + splitName(H.name)[0])) + '" novalidate autocomplete="off">' +
-          '<label class="fl"><span>اسمك</span><input name="nm" dir="rtl" type="text" maxlength="60" placeholder="اكتب اسمك"></label>' +
-          (D.categories.length ? '<div class="fl"><span>محتاج إيه؟</span><div class="svs">' + D.categories.map((c, i) => '<button type="button" class="sv" style="--c:' + rgbOf(c, i) + '" data-svc="' + E(c.name) + '" aria-pressed="false">' + ic(c.icon) + E(c.name) + '</button>').join('') + '</div></div>' : '') +
-          (whens.length ? '<div class="fl"><span>الميعاد المطلوب</span><div class="svs">' + whens.map((w, i) => '<button type="button" class="sv" style="--c:' + PAL[(i + 1) % PAL.length] + '" data-when="' + E(w) + '" aria-pressed="false">' + E(w) + '</button>').join('') + '</div></div>' : '') +
-          '<label class="fl"><span>تفاصيل شغلك</span><textarea name="ms" dir="rtl" rows="4" maxlength="1200" placeholder="' + E(CF.msgPlaceholder || 'احكيلي عن الشغل: المطلوب، الميعاد، أي تفاصيل تفيد') + '"></textarea></label>' +
-          '<div class="pv"><span>الرسالة اللي هتتبعت</span><p id="pv" class="empty" dir="auto">رسالتك هتظهر هنا وانت بتكتب.</p></div><div class="cf-b">' + (wa ? '<button type="button" class="btn primary" data-send="wa" data-to="' + wa + '">' + E(CF.waBtn || 'ابعت على واتساب') + ' ' + ic('arrowL') + '</button>' : '') + (C.email ? '<button type="button" class="btn ghost" data-send="mail" data-to="' + E(C.email) + '">' + E(CF.mailBtn || 'ابعت بالإيميل') + '</button>' : '') + '</div></form>') : '') +
+          '<label class="fl"><span>' + E(T('formName')) + '</span><input name="nm" dir="rtl" type="text" maxlength="60" placeholder="' + E(T('formNamePh')) + '"></label>' +
+          (D.categories.length ? '<div class="fl"><span>' + E(T('formSvc')) + '</span><div class="svs">' + D.categories.map((c, i) => '<button type="button" class="sv" style="--c:' + rgbOf(c, i) + '" data-svc="' + E(c.name) + '" aria-pressed="false">' + ic(c.icon) + E(c.name) + '</button>').join('') + '</div></div>' : '') +
+          (whens.length ? '<div class="fl"><span>' + E(T('formWhen')) + '</span><div class="svs">' + whens.map((w, i) => '<button type="button" class="sv" style="--c:' + PAL[(i + 1) % PAL.length] + '" data-when="' + E(w) + '" aria-pressed="false">' + E(w) + '</button>').join('') + '</div></div>' : '') +
+          '<label class="fl"><span>' + E(T('formMsg')) + '</span><textarea name="ms" dir="rtl" rows="4" maxlength="1200" placeholder="' + E(CF.msgPlaceholder || 'احكيلي عن الشغل: المطلوب، الميعاد، أي تفاصيل تفيد') + '"></textarea></label>' +
+          '<div class="pv"><span>' + E(T('formPreview')) + '</span><p id="pv" class="empty" dir="auto">' + E(T('formPreviewEmpty')) + '</p></div><div class="cf-b">' + (wa ? '<button type="button" class="btn primary" data-send="wa" data-to="' + wa + '">' + E(CF.waBtn || 'ابعت على واتساب') + ' ' + ic('arrowL') + '</button>' : '') + (C.email ? '<button type="button" class="btn ghost" data-send="mail" data-to="' + E(C.email) + '">' + E(CF.mailBtn || 'ابعت بالإيميل') + '</button>' : '') + '</div></form>') : '') +
           '<div class="ct-s">' +
-          (H.available && H.availableText ? '<div class="cc av"><span class="pulse"></span><div><b>متاح دلوقتي</b><span>' + E(H.availableText) + '</span></div></div>' : '') +
-          (wa ? '<a class="cc" style="--c:140,170,110" href="https://wa.me/' + wa + '" target="_blank" rel="noopener noreferrer"><div><b>واتساب</b><span class="ltr">+' + wa + '</span></div>' + ic('ext') + '</a>' : '') +
-          (C.email ? '<div class="cc" style="--c:212,166,74"><a href="mailto:' + E(C.email) + '"><b>الإيميل</b><span class="ltr">' + E(C.email) + '</span></a><button type="button" class="cp" data-copy="' + E(C.email) + '">نسخ</button></div>' : '') +
+          (H.available && H.availableText ? '<div class="cc av"><span class="pulse"></span><div><b>' + E(T('ccAvail')) + '</b><span>' + E(H.availableText) + '</span></div></div>' : '') +
+          (wa ? '<a class="cc" style="--c:140,170,110" href="https://wa.me/' + wa + '" target="_blank" rel="noopener noreferrer"><div><b>' + E(T('ccWa')) + '</b><span class="ltr">+' + wa + '</span></div>' + ic('ext') + '</a>' : '') +
+          (C.email ? '<div class="cc" style="--c:212,166,74"><a href="mailto:' + E(C.email) + '"><b>' + E(T('ccMail')) + '</b><span class="ltr">' + E(C.email) + '</span></a><button type="button" class="cp" data-copy="' + E(C.email) + '">' + E(T('ccCopy')) + '</button></div>' : '') +
           '</div></div>' + (C.socials.length ? '<div class="soc">' + C.socials.filter(s => s && s.url).map(s => '<a href="' + E(link(s.url)) + '" target="_blank" rel="noopener noreferrer">' + E(s.name || s.url) + ' ' + ic('ext') + '</a>').join('') + '</div>' : '') +
         '</div></div></section>');
     }
 
-    const mord = ['#work', '#services', '#about', '#contact']; menu.sort((x, y) => mord.indexOf(x[0]) - mord.indexOf(y[0]));
+    const mord = ['#work', '#services', '#about', '#faq', '#contact']; menu.sort((x, y) => mord.indexOf(x[0]) - mord.indexOf(y[0]));
     const nav = '<header class="nav" id="nav"><div class="wrap nav-in"><a class="brand" href="#top" aria-label="الرئيسية"><b>' + E((H.name || 'ع').trim().charAt(0)) + '</b><span>' + E(H.name) + '</span></a>' +
-      '<nav class="menu" id="menu" aria-label="القائمة">' + menu.map(m => '<a href="' + m[0] + '">' + m[1] + '</a>').join('') + '</nav>' +
+      '<nav class="menu" id="menu" aria-label="القائمة">' + menu.map(m => '<a href="' + m[0] + '">' + E(m[1]) + '</a>').join('') + '</nav>' +
       (D.theme.toggle === false ? '' : '<button type="button" class="ib" data-act="mode" aria-label="تبديل الوضع الليلي/النهاري">' + ic(root.dataset.mode === 'light' ? 'moon' : 'sun') + '</button>') +
       '<button type="button" class="ib burger" data-act="menu" aria-label="القائمة" aria-expanded="false">' + ic('menu') + '</button></div></header>';
 
@@ -154,8 +163,8 @@
     const pen = '<svg class="pen" viewBox="0 0 400 30" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M3 15H397"/></svg>';
     const nameHtml = l2 ? '<span class="nl">' + E(l1) + '</span><span class="nl">' + E(l2) + pen + '</span>' : '<span class="nl">' + E(l1) + pen + '</span>';
     const eyebrow = E(H.eyebrow).replace(/\s*[·•|]\s*/g, '، ');
-    const fx = [[P.length, 'أعمال'], [D.categories.length, 'مجالات'], [skills.length, 'أدوات']].filter(x => x[0] > 0);
-    const facts = fx.length ? '<div class="hero-facts rv" style="--d:.34s">' + fx.map(x => '<div><b data-n="' + x[0] + '">0</b><span>' + x[1] + '</span></div>').join('') + '</div>' : '';
+    const fx = [[P.length, T('factWorks')], [D.categories.length, T('factCats')], [skills.length, T('factTools')]].filter(x => x[0] > 0);
+    const facts = fx.length ? '<div class="hero-facts rv" style="--d:.34s">' + fx.map(x => '<div><b data-n="' + x[0] + '">0</b><span>' + E(x[1]) + '</span></div>').join('') + '</div>' : '';
     const hero = '<section class="hero" id="top"><span class="hero-glow" aria-hidden="true"></span><div class="wrap hero-in"><div class="hero-tx">' +
       (H.eyebrow ? '<p class="eyebrow rv">' + eyebrow + '</p>' : '') +
       '<h1 class="name rv" style="--d:.08s" aria-label="' + E(H.name) + '">' + nameHtml + '</h1>' +
@@ -170,11 +179,11 @@
 
     let base = []; while (skills.length && base.length < 8) base = base.concat(skills);
     const mk = k => base.map(s => '<span' + (k ? ' class="dup"' : '') + '>' + E(s) + '</span><i' + (k ? ' class="dup"' : '') + '></i>').join('');
-    const marq = skills.length ? '<div class="marq" aria-hidden="true"><div class="mt">' + mk(0) + mk(1) + '</div></div>' : '';
+    const marq = skills.length && on('marquee') ? '<div class="marq" aria-hidden="true"><div class="mt">' + mk(0) + mk(1) + '</div></div>' : '';
 
-    const foot = '<footer class="f"><div class="wrap"><span>' + E(D.footer || '') + '</span><a class="up" href="#top">للأعلى ' + ic('arrowUp') + '</a></div></footer>';
+    const foot = '<footer class="f"><div class="wrap"><span>' + E(D.footer || '') + '</span><a class="up" href="#top">' + E(T('footUp')) + ' ' + ic('arrowUp') + '</a></div></footer>';
 
-    const ord = ['work', 'services', 'about', 'contact'], idOf = h => { const m = /id="(\w+)"/.exec(h); return m ? ord.indexOf(m[1]) : -1; };
+    const ord = ['work', 'services', 'about', 'faq', 'contact'], idOf = h => { const m = /id="(\w+)"/.exec(h); return m ? ord.indexOf(m[1]) : -1; };
     sections.sort((x, y) => idOf(x) - idOf(y));
     app.innerHTML = nav + '<main id="main">' + hero + sections.join('') + '</main>' + foot;
     onScroll(); reveal(); life();
@@ -254,7 +263,7 @@
   d.addEventListener('click', e => {
     const c = e.target.closest && e.target.closest('[data-copy]'); if (!c) return;
     const v = c.dataset.copy;
-    const ok = () => toast('اتنسخ الإيميل ✓'), no = () => toast('مقدرتش أنسخ، انسخه بإيدك');
+    const ok = () => toast(T('toastCopied')), no = () => toast('مقدرتش أنسخ، انسخه بإيدك');
     if (navigator.clipboard) navigator.clipboard.writeText(v).then(ok, no); else no();
   });
 
@@ -265,15 +274,15 @@
     const nm = f.elements.nm.value.trim(), ms = f.elements.ms.value.trim();
     const sv = d.querySelector('[data-svc][aria-pressed=true]'), wn = d.querySelector('[data-when][aria-pressed=true]');
     const L = [(f.dataset.g || 'أهلاً') + (nm ? '، أنا ' + nm : '') + '.'];
-    if (sv) L.push('محتاج: ' + sv.dataset.svc);
-    if (wn) L.push('الميعاد: ' + wn.dataset.when);
+    if (sv) L.push(T('msgSvc') + ' ' + sv.dataset.svc);
+    if (wn) L.push(T('msgWhen') + ' ' + wn.dataset.when);
     if (ms) L.push('', ms);
     return L.join('\n');
   }
   function pv() {
     const o = d.getElementById('pv'), f = d.getElementById('cf'); if (!o || !f) return;
     const has = f.elements.ms.value.trim() || f.elements.nm.value.trim() || d.querySelector('[data-svc][aria-pressed=true],[data-when][aria-pressed=true]');
-    o.textContent = has ? compose() : 'رسالتك هتظهر هنا وانت بتكتب.'; o.classList.toggle('empty', !has);
+    o.textContent = has ? compose() : T('formPreviewEmpty'); o.classList.toggle('empty', !has);
   }
   d.addEventListener('input', e => { if (e.target.closest && e.target.closest('.cf')) pv(); });
   d.addEventListener('click', e => {
@@ -284,11 +293,11 @@
     }
     const sd = e.target.closest && e.target.closest('[data-send]'); if (!sd) return;
     const f = d.getElementById('cf'); if (!f) return;
-    if (!f.elements.ms.value.trim()) { f.classList.remove('shake'); void f.offsetWidth; f.classList.add('shake'); f.elements.ms.focus(); toast('اكتب تفاصيل شغلك الأول'); return; }
+    if (!f.elements.ms.value.trim()) { f.classList.remove('shake'); void f.offsetWidth; f.classList.add('shake'); f.elements.ms.focus(); toast(T('toastNeed')); return; }
     const txt = compose(), sv = d.querySelector('[data-svc][aria-pressed=true]');
     if (sd.dataset.send === 'wa') window.open('https://wa.me/' + sd.dataset.to + '?text=' + encodeURIComponent(txt), '_blank', 'noopener');
-    else location.href = 'mailto:' + sd.dataset.to + '?subject=' + encodeURIComponent('طلب شغل' + (sv ? ' - ' + sv.dataset.svc : '')) + '&body=' + encodeURIComponent(txt);
-    toast('اتجهّزت الرسالة ✓');
+    else location.href = 'mailto:' + sd.dataset.to + '?subject=' + encodeURIComponent(T('mailSubject') + (sv ? ' - ' + sv.dataset.svc : '')) + '&body=' + encodeURIComponent(txt);
+    toast(T('toastReady'));
   });
 
   function setFilter(id) {

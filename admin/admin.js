@@ -25,7 +25,7 @@
 
   const VIEWS = [
     ['home', 'الرئيسية', 'home'], ['works', 'الأعمال', 'folder'], ['cats', 'الأقسام', 'grid'],
-    ['content', 'محتوى الصفحة', 'user'], ['contact', 'التواصل', 'mail'], ['look', 'المظهر و SEO', 'sliders'], ['account', 'الحساب والنسخ', 'key']
+    ['content', 'محتوى الصفحة', 'user'], ['contact', 'التواصل', 'mail'], ['texts', 'النصوص والأقسام', 'edit'], ['look', 'المظهر و SEO', 'sliders'], ['account', 'الحساب والنسخ', 'key']
   ];
   const ICON_CHOICES = ['layers', 'code', 'pen', 'film', 'monitor', 'phone', 'camera', 'image', 'music', 'book', 'globe', 'bolt', 'star'];
 
@@ -60,7 +60,7 @@
   function norm(d) {
     d = d || {};
     d.meta = d.meta || {}; d.theme = Object.assign({ accent: '#C9A24B', mode: 'dark', toggle: true }, d.theme);
-    d.hero = d.hero || {}; d.about = d.about || {}; d.about.photos = Array.isArray(d.about.photos) ? d.about.photos : []; d.contact = d.contact || {}; d.contact.socials = d.contact.socials || []; d.contact.steps = Array.isArray(d.contact.steps) ? d.contact.steps : []; d.contact.when = Array.isArray(d.contact.when) ? d.contact.when : ['مستعجل', 'خلال أسبوع', 'مفيش استعجال']; d.contact.form = d.contact.form || {};
+    d.hero = d.hero || {}; d.about = d.about || {}; d.about.photos = Array.isArray(d.about.photos) ? d.about.photos : []; d.contact = d.contact || {}; d.contact.socials = d.contact.socials || []; d.contact.steps = Array.isArray(d.contact.steps) ? d.contact.steps : []; d.contact.when = Array.isArray(d.contact.when) ? d.contact.when : ['مستعجل', 'خلال أسبوع', 'مفيش استعجال']; d.contact.form = d.contact.form || {}; d.faq = Array.isArray(d.faq) ? d.faq : []; d.labels = d.labels || {}; d.show = d.show || {};
     ['stats', 'skills', 'categories', 'projects'].forEach(k => { if (!Array.isArray(d[k])) d[k] = []; });
     return d;
   }
@@ -304,6 +304,18 @@
     d.showModal(); $('#w_t').focus();
   }
 
+  const TXT = [["القائمة العلوية", [["navWork", "أعمالي", "أعمالي"], ["navServices", "خدماتي", "خدماتي"], ["navAbout", "عني", "عني"], ["navFaq", "أسئلة", "أسئلة"], ["navContact", "تواصل", "تواصل"]]], ["قسم «بشتغل في إيه؟»", [["servicesTitle", "العنوان", "بشتغل في إيه؟"], ["servicesSub", "الجملة تحت العنوان", "اختار المجال وشوف شغلي فيه."], ["svcSee", "نص «شوفهم» في الصندوق", "شوفهم"], ["svcSoon", "نص القسم الفاضي", "قريبًا"]]], ["قسم «أعمالي»", [["workTitle", "العنوان", "أعمالي"], ["workSub", "الجملة تحت العنوان", "اضغط على أي عمل تشوفه بالحجم الكامل."], ["workMore", "زر صفحة الأعمال", "شوف صفحة الأعمال كاملة"], ["filterAll", "فلتر «الكل»", "الكل"], ["cardGoImg", "رابط الكارت (صور)", "شوف العمل"], ["cardGoVid", "رابط الكارت (فيديو)", "شاهد العمل"], ["emptyWorks", "لما مفيش أعمال", "لسه مفيش أعمال."]]], ["قسم «عني»", [["aboutSkills", "عنوان الأدوات", "الأدوات اللي بشتغل بيها"], ["aboutSpecs", "تسمية التخصصات", "التخصصات"], ["aboutBtn1", "الزر الأول", "كلمني"], ["aboutBtn2", "الزر التاني", "كل أعمالي"]]], ["أرقام الهيرو", [["factWorks", "بجانب عدد الأعمال", "أعمال"], ["factCats", "بجانب عدد المجالات", "مجالات"], ["factTools", "بجانب عدد الأدوات", "أدوات"]]], ["الأسئلة الشائعة", [["faqTitle", "العنوان", "أسئلة شائعة"], ["faqSub", "الجملة تحت العنوان", "إجابات سريعة قبل ما نتكلم."]]], ["نموذج التواصل", [["formName", "عنوان خانة الاسم", "اسمك"], ["formNamePh", "نص إرشادي للاسم", "اكتب اسمك"], ["formSvc", "عنوان اختيار الخدمة", "محتاج إيه؟"], ["formWhen", "عنوان اختيار الميعاد", "الميعاد المطلوب"], ["formMsg", "عنوان خانة التفاصيل", "تفاصيل شغلك"], ["formPreview", "عنوان معاينة الرسالة", "الرسالة اللي هتتبعت"], ["formPreviewEmpty", "معاينة الرسالة وهي فاضية", "رسالتك هتظهر هنا وانت بتكتب."], ["msgSvc", "سطر الخدمة جوه الرسالة", "محتاج:"], ["msgWhen", "سطر الميعاد جوه الرسالة", "الميعاد:"], ["mailSubject", "عنوان رسالة الإيميل", "طلب شغل"]]], ["كروت التواصل", [["ccAvail", "كارت التوفر", "متاح دلوقتي"], ["ccWa", "كارت واتساب", "واتساب"], ["ccMail", "كارت الإيميل", "الإيميل"], ["ccCopy", "زر النسخ", "نسخ"]]], ["رسائل صغيرة والفوتر", [["toastCopied", "بعد نسخ الإيميل", "اتنسخ الإيميل ✓"], ["toastNeed", "لو التفاصيل فاضية", "اكتب تفاصيل شغلك الأول"], ["toastReady", "بعد تجهيز الرسالة", "اتجهّزت الرسالة ✓"], ["footUp", "رابط الفوتر", "للأعلى"]]]];
+  function faqList() {
+    return '<div id="l_faq">' + S.faq.map((it, i) => '<div class="mini" data-i="' + i + '"><span class="grip">' + I('grip') + '</span><input class="n" data-b="faq.' + i + '.q" placeholder="السؤال" value="' + esc(it.q) + '"><textarea rows="2" data-b="faq.' + i + '.a" placeholder="الإجابة">' + esc(it.a) + '</textarea><button class="ib bad" data-act="ldel" data-p="faq" data-i="' + i + '" aria-label="حذف">' + I('x') + '</button></div>').join('') + '</div>';
+  }
+  function vTexts() {
+    const sh = S.show || {}, lb = S.labels || {};
+    const SEC = [['services', 'بشتغل في إيه؟ (الخدمات)'], ['work', 'أعمالي'], ['about', 'عني'], ['faq', 'الأسئلة الشائعة'], ['contact', 'التواصل']];
+    return '<div class="panel"><h2>إظهار وإخفاء الأقسام</h2><p class="sub">اقفل أي قسم مش عايزه يظهر في الصفحة الرئيسية.</p><div class="g2">' + SEC.map(s => '<label class="sw"><input type="checkbox" data-b="show.' + s[0] + '"' + (sh[s[0]] !== false ? ' checked' : '') + '>' + s[1] + '</label>').join('') + '</div></div>' +
+      '<div class="panel"><h2>الأسئلة الشائعة</h2><p class="sub">بتظهر كأكورديون قبل التواصل. لو فاضية القسم بيختفي.</p>' + faqList() + '<button class="btn sm" data-act="ladd" data-p="faq">' + I('plus') + ' إضافة سؤال</button></div>' +
+      '<p style="color:var(--muted);margin:22px 0 0">كل النصوص الثابتة في الصفحة الرئيسية. سيب أي خانة فاضية لو عايز النص الأصلي (الظاهر باهت جواها).</p>' +
+      TXT.map(g => '<div class="panel"><h2>' + g[0] + '</h2><div class="g2">' + g[1].map(f => '<label>' + f[1] + '<input data-b="labels.' + f[0] + '" placeholder="' + esc(f[2]) + '" value="' + esc(lb[f[0]]) + '"></label>').join('') + '</div></div>').join('');
+  }
   const CPAL = ['#D4A64A', '#8CAA6E', '#CC7A6B', '#6FA3A0', '#AA8CAA'];
   const colorVal = (c, i) => /^#[0-9a-f]{6}$/i.test(c.color || '') ? c.color : CPAL[i % CPAL.length];
   function vCats() {
@@ -358,7 +370,7 @@
       '<div class="panel"><h2>نسخة احتياطية</h2><p class="sub">نزّل كل محتوى موقعك كملف، أو استرجعه.</p><div class="chips"><button class="btn sm" data-act="export">' + I('download') + ' تنزيل نسخة</button><button class="btn sm" data-act="import">' + I('upload') + ' استرجاع من ملف</button><input type="file" id="impf" accept=".json,.js,application/json" hidden></div></div>' +
       '<div class="panel"><h2>مهم</h2><ul class="tips"><li>' + I('info') + '<span>كلمة السر بتتراجع على سيرفر محمي، والتوكن مش موجود في المتصفح ولا في الريبو. الجلسة بتنتهي لوحدها بعد 4 ساعات، ولو الجهاز مش بتاعك اعمل «تسجيل خروج».</span></li><li>' + I('info') + '<span>لو اتعدّل الموقع من مكان تاني (من GitHub مباشرة) افتح اللوحة تاني قبل ما تنشر عشان متمسحش تعديل.</span></li></ul></div>';
   }
-  const RENDER = { home: vHome, works: vWorks, cats: vCats, content: vContent, contact: vContact, look: vLook, account: vAccount };
+  const RENDER = { home: vHome, works: vWorks, cats: vCats, content: vContent, contact: vContact, texts: vTexts, look: vLook, account: vAccount };
 
   function go(v) {
     view = v;
@@ -367,7 +379,7 @@
     const el = $('#view'); el.innerHTML = RENDER[v](); window.scrollTo(0, 0);
     if (v === 'works') sortable($('#plist'), () => S.projects, () => { touch(); $('#plist').innerHTML = listWorks(); });
     if (v === 'cats') sortable($('#clist'), () => S.categories, () => { touch(); go('cats'); });
-    ['skills', 'stats', 'contact.socials', 'contact.steps', 'contact.when'].forEach(p => { const c = $('#l_' + p); if (c) sortable(c, () => get(S, p), () => { touch(); go(view); }); });
+    ['skills', 'stats', 'contact.socials', 'contact.steps', 'contact.when', 'faq'].forEach(p => { const c = $('#l_' + p); if (c) sortable(c, () => get(S, p), () => { touch(); go(view); }); });
     const hp = $('#hp'); if (hp) bindImageField(hp, 1200, v => { S.hero.photo = v; touch(); });
     const mg = $('#ap'); if (mg) bindGallery(mg, S.about.photos.slice(), 1200, v => { S.about.photos = v; touch(); });
     const ap = $('#accPick'); if (ap) ap.oninput = () => { S.theme.accent = ap.value; touch(); $$('.sw-c').forEach(x => x.classList.remove('on')); };
@@ -406,7 +418,7 @@
       const c = S.categories[i], n = S.projects.filter(p => p.category === c.id).length;
       if (await ask(n ? 'هتمسح قسم «' + c.name + '» و' + n + ' عمل جواه. متأكد؟' : 'تمسح قسم «' + c.name + '»؟', 'مسح')) { S.projects = S.projects.filter(p => p.category !== c.id); S.categories.splice(i, 1); touch(); go('cats'); }
     }
-    else if (a === 'ladd') { const arr = get(S, b.dataset.p); arr.push(b.dataset.p === 'skills' || b.dataset.p === 'contact.when' ? '' : b.dataset.p === 'stats' ? { value: '', label: '' } : b.dataset.p === 'contact.steps' ? { t: '', d: '' } : { name: '', url: '' }); touch(); go(view); const rows = $$('#l_' + b.dataset.p + ' .mini'); if (rows.length) rows[rows.length - 1].querySelector('input').focus(); }
+    else if (a === 'ladd') { const arr = get(S, b.dataset.p); arr.push(b.dataset.p === 'faq' ? { q: '', a: '' } : b.dataset.p === 'skills' || b.dataset.p === 'contact.when' ? '' : b.dataset.p === 'stats' ? { value: '', label: '' } : b.dataset.p === 'contact.steps' ? { t: '', d: '' } : { name: '', url: '' }); touch(); go(view); const rows = $$('#l_' + b.dataset.p + ' .mini'); if (rows.length) rows[rows.length - 1].querySelector('input').focus(); }
     else if (a === 'ccol') { delete S.categories[+b.dataset.i].color; touch(); go(view); }
     else if (a === 'ldel') { get(S, b.dataset.p).splice(i, 1); touch(); go(view); }
     else if (a === 'acc') { S.theme.accent = b.dataset.c; touch(); go('look'); }
