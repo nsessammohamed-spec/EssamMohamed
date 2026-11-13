@@ -98,6 +98,9 @@
     return '<span class="phs n' + Math.max(1, pics.length) + '">' + (pics.length ? order.map((u, i) => '<span class="phn ' + cls[i] + '"><img loading="lazy" decoding="async" src="' + E(u) + '" alt="' + E(title) + '"></span>').join('') : '<span class="phn c"><span class="ps"><b dir="auto">' + E(String(title || '').split('|')[0].trim().slice(0, 14)) + '</b><i></i><i></i><i></i></span></span>') + '</span>';
   };
   const chips = p => Array.isArray(p.tools) && p.tools.length ? '<ul class="tl" aria-label="الأدوات">' + p.tools.slice(0, 5).map(t => '<li>' + E(t) + '</li>').join('') + '</ul>' : '';
+  /* فيديو العمل: يوتيوب / فيميو / ملف mp4 */
+  const vOf = p => { const u = String((p && p.video) || '').trim(); if (!u) return null; let m = /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/.exec(u); if (m) return { e: 'https://www.youtube-nocookie.com/embed/' + m[1] + '?rel=0' }; m = /vimeo\.com\/(?:video\/)?(\d+)/.exec(u); if (m) return { e: 'https://player.vimeo.com/video/' + m[1] }; return /^(https?:\/\/|videos\/|blob:)/i.test(u) ? { f: u } : null; };
+  const player = (p, poster) => { const v = vOf(p); if (!v) return ''; return v.e ? '<iframe src="' + E(v.e) + '" title="' + E(p.title) + '" loading="lazy" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe>' : '<video src="' + E(v.f) + '" controls playsinline preload="metadata"' + (poster ? ' poster="' + E(poster) + '"' : '') + '></video>'; };
 
   function card(p, i) {
     const c = catOf(p.category), all = imgsOf(p), src = all[0];
@@ -106,6 +109,7 @@
       (app ? phones(all, c, p.title) : src ? '<img loading="lazy" decoding="async" src="' + E(src) + '" alt="' + E(p.title) + '">' : '<div class="ph">' + ic(c.icon) + '</div>') +
       '<span class="cat-b">' + ic(c.icon) + ' ' + E(c.name) + '</span>' +
       '<span class="idx">' + String(i + 1).padStart(2, '0') + '</span>' +
+      (vOf(p) ? '<span class="vd-b">' + ic('play') + ' فيديو</span>' : '') +
       (!app && c.type !== 'video' && all.length > 1 ? '<span class="cnt">' + ic('layers') + all.length + ' صور</span>' : '') +
       (c.type === 'video' ? '<div class="pl"><span>' + ic('play') + '</span></div>' : '') + '</div>';
     const body = '<div class="cb">' + (p.tag ? '<span class="tg">' + E(p.tag) + '</span>' : '') + '<h3 dir="auto">' + E(p.title) + '</h3>' + (p.desc ? '<p dir="auto">' + E(p.desc) + '</p>' : '') + chips(p) +
@@ -113,23 +117,28 @@
     return '<a class="card' + (p.featured ? ' feat' : '') + '" style="--i:' + i + ';--c:' + rgbOf(c, Math.max(0, D.categories.findIndex(x => x.id === p.category))) + '" href="works.html#w-' + encodeURIComponent(p.id) + '" aria-label="' + E(p.title) + '">' + media + body + '</a>';
   }
 
-  /* مشروع تطبيق لوحده في تصنيفه: بيتعرض كلوحة عريضة بدل كارت صغير لوحده */
+  /* لوحة تطبيق/لعبة تفاعلية: لقطات بتتبدّل لوحدها + تبويب فيديو + مميزات */
   function showcase(p) {
-    const c = catOf(p.category), all = imgsOf(p), href = 'works.html#w-' + encodeURIComponent(p.id);
-    const ft = (Array.isArray(p.features) ? p.features : []).filter(Boolean).slice(0, 4);
+    const c = catOf(p.category), all = imgsOf(p), href = 'works.html#w-' + encodeURIComponent(p.id), vd = vOf(p), shots = all.slice(0, 8);
+    const ft = (Array.isArray(p.features) ? p.features : []).filter(Boolean).slice(0, 6);
     const lks = (Array.isArray(p.links) ? p.links : []).filter(x => x && x.url && link(x.url) !== '#').slice(0, 2);
+    const scr = shots.length ? shots.map((u, k) => '<img class="sc-s' + (k ? '' : ' on') + '" loading="lazy" decoding="async" src="' + E(u) + '" alt="' + E(p.title) + ' — ' + (k + 1) + '">').join('') : '<span class="ps"><b dir="auto">' + E(String(p.title || '').split('|')[0].trim().slice(0, 14)) + '</b><i></i><i></i><i></i></span>';
+    const tabs = vd ? '<div class="sc-tabs" role="group" aria-label="طريقة العرض"><button type="button" data-sct="shots" aria-pressed="true">' + ic('layers') + ' اللقطات</button><button type="button" data-sct="vid" aria-pressed="false">' + ic('play') + ' الفيديو</button></div>' : '';
+    const dots = shots.length > 1 ? '<div class="sc-dots">' + shots.map((u, k) => '<button type="button" data-scs="' + k + '" aria-label="لقطة ' + (k + 1) + '" aria-current="' + (k === 0) + '"></button>').join('') + '</div>' : '';
     return '<article class="sc" style="--c:' + rgbOf(c, Math.max(0, D.categories.findIndex(x => x.id === p.category))) + '">' +
       '<div class="sc-b">' + (p.tag ? '<span class="tg">' + E(p.tag) + '</span>' : '') + (p.status ? '<span class="pj-st">' + E(p.status) + '</span>' : '') +
       '<h3 dir="auto">' + E(p.title) + '</h3>' + (p.desc ? '<p dir="auto">' + E(p.desc) + '</p>' : '') +
       (ft.length ? '<ul class="ft">' + ft.map(x => '<li>' + ic('check') + '<span dir="auto">' + E(x) + '</span></li>').join('') + '</ul>' : '') + chips(p) +
       '<div class="sc-go"><a class="btn primary" href="' + href + '">' + E('شوف تفاصيل التطبيق') + ' ' + ic('arrowL') + '</a>' +
+      (vd ? '<button type="button" class="btn ghost" data-sct="vid">' + ic('play') + ' شاهد الفيديو</button>' : '') +
       lks.map(x => '<a class="btn ghost" href="' + E(link(x.url)) + '" target="_blank" rel="noopener noreferrer">' + E(x.label || 'افتح المشروع') + ' ' + ic('ext') + '</a>').join('') + '</div></div>' +
-      '<a class="media app sc-m" href="' + href + '" aria-label="' + E(p.title) + '">' + phones(all, c, p.title) + '</a></article>';
+      '<div class="media app sc-m"><span class="phs n1"><span class="phn c">' + scr + '</span></span><div class="sc-vid" hidden></div>' + tabs + dots +
+      (vd ? '<template class="sc-tpl">' + player(p, shots[0]) + '</template>' : '') + '</div></article>';
   }
 
   function grid() {
     const list = shown().filter(p => cur === 'all' || p.category === cur);
-    if (cur !== 'all' && list.length === 1 && isApp(list[0], catOf(list[0].category))) return showcase(list[0]);
+    if (cur !== 'all' && list.length && list.every(x => isApp(x, catOf(x.category)))) return list.map(x => showcase(x)).join('');
     return list.length ? list.map(card).join('') : '<div class="empty">' + E(T('emptyWorks')) + '</div>';
   }
 
@@ -199,15 +208,15 @@
     const pk = (Array.isArray(D.packages) ? D.packages : []).filter(x => x && x.name);
     if (on('pricing') && pk.length) {
       menu.push(['#pricing', T('navPricing')]);
-      sections.push('<section class="s" id="pricing"><div class="wrap"><div class="sh ctr rv"><span class="no">' + num() + '</span><h2>' + E(T('pricingTitle')) + '</h2><p>' + E(T('pricingSub')) + '</p></div><div class="pks">' +
+      sections.push('<section class="s" id="pricing"><div class="wrap"><div class="sh ctr rv"><span class="no">' + num() + '</span><h2>' + E(T('pricingTitle')) + '</h2><p>' + E(T('pricingSub')) + '</p></div><div class="pk-car"><button type="button" class="pk-nav pk-r" aria-label="السابق">' + ic('arrowL') + '</button><div class="pks" tabindex="0" role="region" aria-label="' + E(T('pricingTitle')) + '">' +
         pk.map((x, i) => {
           const c = D.categories.find(k => k.id === x.category) || null, feats = (Array.isArray(x.features) ? x.features : []).filter(Boolean);
-          return '<article class="pk rv' + (x.featured ? ' hot' : '') + '" style="--d:' + (i * .08) + 's;--c:' + rgbOf(c, i) + '">' + (x.badge ? '<span class="pk-b">' + E(x.badge) + '</span>' : '') +
+          return '<article class="pk' + (x.featured ? ' hot' : '') + '" style="--c:' + rgbOf(c, i) + '">' + (x.badge ? '<span class="pk-b">' + E(x.badge) + '</span>' : '') +
             (c ? '<span class="ico">' + ic(c.icon) + '</span>' : '') + '<h3 dir="auto">' + E(x.name) + '</h3>' + (x.desc ? '<p class="pk-d" dir="auto">' + E(ar(x.desc)) + '</p>' : '') +
             '<div class="pk-p">' + (x.price ? '<small>' + E(T('pkFrom')) + '</small><b>' + E(x.price) + '</b>' : '<b class="cs">' + E(T('pkCustom')) + '</b>') + (x.note ? '<em>' + E(x.note) + '</em>' : '') + '</div>' +
             (feats.length ? '<ul>' + feats.map(f => '<li>' + ic('check') + '<span dir="auto">' + E(ar(f)) + '</span></li>').join('') + '</ul>' : '') +
             '<button type="button" class="btn ' + (x.featured ? 'primary' : 'ghost') + '" data-ask="' + E(c ? c.name : x.name) + '">' + E(T('pkAsk')) + ' ' + ic('arrowL') + '</button></article>';
-        }).join('') + '</div>' + policy() + '</div></section>');
+        }).join('') + '</div><button type="button" class="pk-nav pk-l" aria-label="التالي">' + ic('arrowL') + '</button></div>' + policy() + '</div></section>');
     }
 
     const faq = (Array.isArray(D.faq) ? D.faq : []).filter(x => x && x.q && x.a);
@@ -253,16 +262,11 @@
     const facts = fx.length ? '<div class="hero-facts rv" style="--d:.34s">' + fx.map(x => /^\d+$/.test(String(x[0])) ? '<div><b data-n="' + x[0] + '">0</b><span>' + E(x[1]) + '</span></div>' : '<div><b>' + E(x[0]) + '</b><span>' + E(x[1]) + '</span></div>').join('') + '</div>' : '';
     const RINGS = '<svg viewBox="0 0 800 800" fill="none" stroke="currentColor" stroke-linecap="round" focusable="false"><circle cx="400" cy="400" r="110" opacity=".5"/><circle cx="400" cy="400" r="190" opacity=".34"/><circle class="dash" cx="400" cy="400" r="250" stroke-width="2.4" stroke-dasharray="1 11" opacity=".6"/><circle cx="400" cy="400" r="310" opacity=".22"/><circle cx="400" cy="400" r="380" opacity=".14"/><circle cx="522" cy="255" r="5" fill="currentColor" stroke="none" opacity=".85"/><circle cx="132" cy="555" r="3.5" fill="currentColor" stroke="none" opacity=".7"/><circle cx="757" cy="530" r="9" opacity=".6"/><circle cx="318" cy="293" r="3" fill="currentColor" stroke="none" opacity=".6"/></svg>';
     const hero = '<section class="hero" id="top"><span class="hero-glow" aria-hidden="true"></span><div class="wrap hero-in"><span class="hero-rings" aria-hidden="true">' + RINGS + '</span><div class="hero-tx">' +
-      (H.eyebrow ? '<p class="eyebrow rv">' + eyebrow + '</p>' : '') +
       '<h1 class="name rv" style="--d:.08s" aria-label="' + E(H.name) + '">' + nameHtml + '</h1>' +
       (H.sub ? '<p class="sub rv" style="--d:.16s">' + E(ar(H.sub)) + '</p>' : '') +
-      '<div class="cta rv" style="--d:.24s">' +
-      (H.cta1Text ? '<a class="btn primary" href="' + E(link(H.cta1Link)) + '">' + E(H.cta1Text) + ' ' + ic('arrowL') + '</a>' : '') +
-      (H.cta2Text ? '<a class="btn ghost" href="' + E(link(H.cta2Link)) + '">' + E(H.cta2Text) + '</a>' : '') + '</div>' +
-      (H.available && H.availableText ? '<p class="avail rv" style="--d:.3s"><span class="pulse"></span>' + E(H.availableText) + '</p>' : '') +
       '</div><figure class="hero-ph rv" data-ps="' + ps + '" style="--d:.2s"><div class="arch"' + (photo ? ' data-lb="' + E(photo) + '" title="تكبير الصورة"' : '') + '>' +
       (photo ? '<img src="' + E(photo) + '" alt="' + E(H.name) + '" fetchpriority="high" decoding="async">' : '<div class="mono" aria-hidden="true">' + E((H.name || 'ع').trim().charAt(0)) + '</div>') +
-      '</div>' + (photo && H.badges !== false ? D.categories.slice(0, 4).map((c, i) => '<span class="fb fb' + i + '" style="--c:' + rgbOf(c, i) + '" aria-hidden="true">' + ic(c.icon) + E(c.name) + '</span>').join('') : '') + '</figure>' + facts + '</div></section>';
+      '</div>' + (photo && H.badges !== false ? D.categories.slice(0, 4).map((c, i) => '<span class="fb fb' + i + '" style="--c:' + rgbOf(c, i) + '" aria-hidden="true">' + ic(c.icon) + E(c.name) + '</span>').join('') : '') + '</figure></div></section>';
 
     let base = []; while (skills.length && base.length < 8) base = base.concat(skills);
     const mk = k => base.map(s => '<span' + (k ? ' class="dup"' : '') + '>' + E(s) + '</span><i' + (k ? ' class="dup"' : '') + '></i>').join('');
@@ -273,7 +277,27 @@
     const ord = ['work', 'services', 'pricing', 'about', 'proof', 'faq', 'contact'], idOf = h => { const m = /id="(\w+)"/.exec(h); return m ? ord.indexOf(m[1]) : -1; };
     sections.sort((x, y) => idOf(x) - idOf(y));
     app.innerHTML = nav + '<main id="main">' + hero + sections.join('') + '</main>' + foot;
-    onScroll(); reveal(); life();
+    onScroll(); reveal(); life(); pkCar();
+  }
+
+
+  /* ---------- سلايدر الباقات (أسهم يمين وشمال) ---------- */
+  function pkCar() {
+    const car = d.querySelector('.pk-car'); if (!car) return;
+    const tr = car.querySelector('.pks'), bl = car.querySelector('.pk-l'), br = car.querySelector('.pk-r');
+    const step = () => { const c = tr.querySelector('.pk'); return c ? c.getBoundingClientRect().width + (parseFloat(getComputedStyle(tr).columnGap) || 20) : tr.clientWidth; };
+    const upd = () => {
+      const max = tr.scrollWidth - tr.clientWidth, l = tr.scrollLeft, rtl = getComputedStyle(tr).direction === 'rtl';
+      const left = rtl ? (-l < max - 12) : (l > 12), right = rtl ? (-l > 12) : (l < max - 12);
+      bl.disabled = !left || max < 4; br.disabled = !right || max < 4;
+      car.classList.toggle('no-nav', max < 4);
+    };
+    bl.addEventListener('click', () => tr.scrollBy({ left: -step(), behavior: 'smooth' }));
+    br.addEventListener('click', () => tr.scrollBy({ left: step(), behavior: 'smooth' }));
+    tr.addEventListener('scroll', () => requestAnimationFrame(upd), { passive: true });
+    tr.addEventListener('keydown', e => { if (e.key === 'ArrowLeft') { e.preventDefault(); bl.click(); } else if (e.key === 'ArrowRight') { e.preventDefault(); br.click(); } });
+    addEventListener('resize', upd, { passive: true });
+    upd(); setTimeout(upd, 400);
   }
 
   /* ---------- behaviours ---------- */
@@ -389,6 +413,19 @@
     else location.href = 'mailto:' + sd.dataset.to + '?subject=' + encodeURIComponent(T('mailSubject') + (sv ? ' - ' + sv.dataset.svc : '')) + '&body=' + encodeURIComponent(txt);
     toast(T('toastReady'));
   });
+
+  /* عرض التطبيقات التفاعلي: تبديل اللقطات، تبويب الفيديو، وتبديل تلقائي هادي */
+  function scShot(sc, k) { const im = sc.querySelectorAll('.sc-s'); if (!im.length) return; k = (k + im.length) % im.length; im.forEach((x, j) => x.classList.toggle('on', j === k)); sc.querySelectorAll('[data-scs]').forEach((b, j) => b.setAttribute('aria-current', String(j === k))); sc._k = k; }
+  function scTab(sc, mode) { const box = sc.querySelector('.sc-vid'), tpl = sc.querySelector('.sc-tpl'); if (!box || !tpl) return; const v = mode === 'vid'; sc.classList.toggle('vid', v); box.hidden = !v; box.innerHTML = v ? tpl.innerHTML : ''; sc.querySelectorAll('.sc-tabs [data-sct]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.sct === mode))); }
+  d.addEventListener('click', e => {
+    const t = e.target.closest && e.target.closest('[data-scs],[data-sct]'); if (!t) return;
+    const sc = t.closest('.sc'); if (!sc) return; sc._hold = true;
+    if (t.hasAttribute('data-scs')) { scTab(sc, 'shots'); scShot(sc, +t.dataset.scs); } else scTab(sc, t.dataset.sct);
+  });
+  setInterval(() => {
+    if (RM || d.hidden) return;
+    d.querySelectorAll('.sc').forEach(sc => { if (sc._hold || sc.classList.contains('vid') || sc.matches(':hover')) return; const r = sc.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return; scShot(sc, (sc._k || 0) + 1); });
+  }, 3800);
 
   function setFilter(id) {
     cur = id;

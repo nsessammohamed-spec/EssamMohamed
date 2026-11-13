@@ -812,3 +812,95 @@ section.s{isolation:isolate;overflow-x:clip}
   .cx h2::after{margin-inline:0}
 }
 @media(prefers-reduced-motion:reduce){.cx{animation:none}}
+
+/* =====================================================================
+   v11: عرض البرمجة والتصميمات — لوحات تطبيقات تفاعلية + فيديو + كروت أحيا
+   ===================================================================== */
+.vd-b{position:absolute;z-index:4;inset-block-end:14px;inset-inline-end:14px;display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;font-family:var(--f-ui);font-weight:700;font-size:12.5px;color:var(--on-accent);background:linear-gradient(135deg,var(--accent2),var(--accent));box-shadow:0 8px 18px -8px rgba(0,0,0,.6)}
+.card .media img,.wk-t .wk-m img{transition:transform .7s var(--ease)}
+.card:hover .media:not(.app) img,.wk-t:hover .wk-m:not(.app) img{transform:scale(1.06)}
+.cb h3{transition:color .25s}.card:hover .cb h3{color:var(--accent2)}
+.card .go{transition:gap .3s var(--ease)}.card:hover .go{gap:14px}
+
+/* لوحات التطبيقات (القسم لو كله تطبيقات: كل مشروع لوحة، بالتبادل يمين/شمال) */
+.sc:nth-child(even) .sc-b{order:2}
+.sc-m{min-height:500px;display:block}
+.sc-m .phn.c{overflow:hidden}
+.sc-m .sc-s{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;opacity:0;transform:scale(1.04);transition:opacity .6s ease,transform .9s var(--ease)}
+.sc-m .sc-s.on{opacity:1;transform:none}
+.sc-tabs,.sc-dots{position:absolute;z-index:6;inset-inline:0;margin-inline:auto;width:max-content;max-width:92%;display:flex;gap:4px;padding:4px;border-radius:999px;background:color-mix(in srgb,var(--bg) 72%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line)}
+.sc-tabs{inset-block-start:16px}
+.sc-tabs button{font:inherit;font-family:var(--f-ui);font-weight:500;font-size:14px;display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border:0;border-radius:999px;background:none;color:var(--muted);cursor:pointer;transition:background .2s,color .2s}
+.sc-tabs button[aria-pressed=true]{background:linear-gradient(135deg,var(--accent2),var(--accent));color:var(--on-accent)}
+.sc-dots{inset-block-end:14px;gap:8px;padding:8px 12px}
+.sc-dots button{width:9px;height:9px;padding:0;border:0;border-radius:9px;background:rgba(var(--accent-rgb),.38);cursor:pointer;transition:width .3s var(--ease),background .2s}
+.sc-dots button[aria-current=true]{width:26px;background:var(--accent2)}
+.sc-vid{position:absolute;inset:68px 18px 18px;z-index:5;display:grid;place-items:center;animation:scin .45s var(--ease)}
+.sc-vid[hidden]{display:none}
+.sc-vid video,.sc-vid iframe{max-width:100%;max-height:100%;border-radius:18px;background:#000;box-shadow:0 26px 50px -24px rgba(0,0,0,.85);border:1px solid rgba(var(--c),.4)}
+.sc-vid iframe{width:100%;height:auto;aspect-ratio:16/9;border:0}
+.sc.vid .phs,.sc.vid .sc-dots{opacity:0;pointer-events:none}
+@keyframes scin{from{opacity:0;transform:translateY(10px)}}
+@media(max-width:900px){.sc:nth-child(even) .sc-b{order:0}.sc-m{min-height:430px}}
+@media(prefers-reduced-motion:reduce){.sc-m .sc-s{transition:none}}
+
+/* العارض: فيديو التطبيق */
+.vw-v.file{width:auto;aspect-ratio:auto;background:none;display:grid;place-items:center}
+.vw-v video{max-width:100%;max-height:min(72vh,100%);border-radius:14px;background:#000}
+.vw-vt{margin-top:6px}
+
+
+/* ===== الباقات: سلايدر بصف واحد + بطاقات أحسن + تدرج ألوان أغنى ===== */
+.pk-car{position:relative;--pk-gap:22px}
+.pks{display:flex;flex-wrap:nowrap;gap:var(--pk-gap);overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;padding:22px 6px 34px;margin-inline:-6px;scroll-padding-inline:6px;scrollbar-width:none;align-items:stretch;overscroll-behavior-x:contain;outline:none}
+.pks::-webkit-scrollbar{display:none}
+.pk{--ct:color-mix(in srgb,rgb(var(--c)) 62%,#fff);flex:0 0 calc((100% - 2*var(--pk-gap))/3);min-width:0;scroll-snap-align:start;position:relative;display:flex;flex-direction:column;gap:16px;padding:30px 26px 26px;border-radius:26px;overflow:hidden;isolation:isolate;
+  border:1px solid rgba(var(--c),.30);
+  background:
+    radial-gradient(120% 70% at 100% 0%,rgba(var(--c),.30),transparent 60%),
+    linear-gradient(165deg,rgba(var(--c),.16) 0%,rgba(var(--c),.05) 42%,var(--surface) 78%);
+  box-shadow:0 1px 0 rgba(255,255,255,.04) inset,0 22px 40px -30px rgba(var(--c),.55);
+  transition:transform .35s var(--ease),border-color .3s,box-shadow .35s}
+:root[data-mode=light] .pk{--ct:color-mix(in srgb,rgb(var(--c)) 62%,#000);
+  background:
+    radial-gradient(120% 70% at 100% 0%,rgba(var(--c),.26),transparent 62%),
+    linear-gradient(165deg,rgba(var(--c),.15) 0%,rgba(var(--c),.05) 40%,#fff 80%)}
+.pk::before{content:"";position:absolute;inset-block-start:0;inset-inline:0;height:4px;background:linear-gradient(90deg,rgba(var(--c),.95),rgba(var(--c),.25));z-index:-1}
+.pk::after{content:"";position:absolute;inset-inline-start:-70px;inset-block-end:-70px;width:200px;height:200px;border-radius:50%;background:radial-gradient(closest-side,rgba(var(--c),.18),transparent);z-index:-1;pointer-events:none}
+.pk:hover{transform:translateY(-8px);border-color:rgba(var(--c),.65);box-shadow:0 34px 50px -30px rgba(var(--c),.75)}
+.pk .ico{width:54px;height:54px;border-radius:17px;color:var(--ct);background:linear-gradient(145deg,rgba(var(--c),.30),rgba(var(--c),.10));border:1px solid rgba(var(--c),.45);box-shadow:0 12px 24px -14px rgba(var(--c),.9)}
+.pk h3{font-size:23px;line-height:1.45;color:var(--ink)}
+.pk-d{font-size:16px;line-height:1.75}
+.pk-p{padding:12px 16px;border:1px solid rgba(var(--c),.28);border-radius:16px;background:rgba(var(--c),.10);flex-direction:column;align-items:flex-start;gap:2px}
+.pk-p b,.pk-p b.cs{color:var(--ct);font-size:18px;font-weight:700}
+.pk-p small{font-size:13px}
+.pk ul{gap:10px}
+.pk li{font-size:15.5px;line-height:1.65;gap:11px}
+.pk li svg{width:22px;height:22px;padding:4px;margin-top:2px;border-radius:50%;background:rgba(var(--c),.20);color:var(--ct);stroke-width:3}
+.pk .btn{width:100%;padding-block:13px;border-radius:999px;border:1.5px solid rgba(var(--c),.7);color:var(--ct);background:rgba(var(--c),.08)}
+.pk .btn:hover{background:rgba(var(--c),.22);transform:translateY(-2px)}
+.pk.hot{border-color:rgba(var(--accent-rgb),.85);box-shadow:0 0 0 1px rgba(var(--accent-rgb),.35),0 34px 60px -32px rgba(var(--accent-rgb),.85)}
+.pk.hot .btn{background:linear-gradient(135deg,var(--accent2),var(--accent));color:var(--on-accent);border-color:var(--accent);box-shadow:0 14px 28px -14px rgba(var(--accent-rgb),.9)}
+.pk-b{inset-block-start:16px;inset-inline-start:auto;inset-inline-end:18px;font-size:12.5px;padding:4px 13px;box-shadow:0 8px 18px -8px rgba(var(--accent-rgb),.8)}
+.pk.hot .ico{margin-inline-end:0}
+
+/* الأسهم */
+.pk-nav{all:unset;box-sizing:border-box;cursor:pointer;position:absolute;inset-block-start:50%;z-index:5;width:50px;height:50px;border-radius:50%;display:grid;place-items:center;font-size:22px;color:var(--accent2);background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(var(--accent-rgb),.55);box-shadow:0 16px 30px -12px rgba(0,0,0,.45);transform:translateY(-62%);transition:transform .25s var(--ease),background .25s,color .25s,opacity .25s}
+.pk-nav .i,.pk-nav svg{width:22px;height:22px}
+.pk-nav:hover:not(:disabled){background:linear-gradient(135deg,var(--accent2),var(--accent));color:var(--on-accent);transform:translateY(-62%) scale(1.1)}
+.pk-nav:focus-visible{outline:3px solid var(--accent2);outline-offset:3px}
+.pk-nav:disabled{opacity:.28;cursor:default}
+.pk-l{inset-inline-start:auto;left:-18px}
+.pk-r{right:-18px}
+.pk-r svg,.pk-r .i{transform:scaleX(-1)}
+.pk-car.no-nav .pk-nav{display:none}
+
+@media(max-width:1180px){.pk-l{left:-8px}.pk-r{right:-8px}}
+@media(max-width:1000px){.pk{flex-basis:calc((100% - var(--pk-gap))/2)}}
+@media(max-width:640px){
+  .pk-car{--pk-gap:14px}
+  .pk{flex-basis:84%;padding:26px 20px 22px}
+  .pk-nav{width:42px;height:42px}
+  .pk-l{left:-4px}.pk-r{right:-4px}
+}
+@media(prefers-reduced-motion:reduce){.pks{scroll-behavior:auto}.pk{transition:none}}
