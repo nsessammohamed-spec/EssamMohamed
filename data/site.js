@@ -62,7 +62,31 @@ window.SITE={
    "type": "video"
   }
  ],
- "projects": [],
+ "projects": [
+  {
+   "id": "pmwecbqhgum0",
+   "category": "design",
+   "title": "Italian PIZZA Menu for German Restaurant",
+   "desc": "Designing Italian PIZZA Menu and Delicious Foods for a German Restaurant. The idea is to gather all these information and sections in a simple creative way to make it easy for the client to choose what to eat, Tasty food !",
+   "link": "https://www.behance.net/portfolio/editor?project_id=256913227",
+   "image": "images/uploads/mwecdcqt8bi.webp",
+   "images": [
+    "images/uploads/mwecdcqt8bi.webp",
+    "images/uploads/mwecdczd9lp.webp",
+    "images/uploads/mwecdd890t1.webp",
+    "images/uploads/mwecddh5n5h.webp",
+    "images/uploads/mwecddphfke.webp",
+    "images/uploads/mwecddxrnl5.webp",
+    "images/uploads/mwecde69iei.webp",
+    "images/uploads/mwecdedkqpx.webp",
+    "images/uploads/mwecdelj02l.webp",
+    "images/uploads/mwecdevukox.webp"
+   ],
+   "tag": "MENU",
+   "visible": true,
+   "featured": true
+  }
+ ],
  "contact": {
   "title": "خلينا نشتغل سوا",
   "text": "متاح للعمل الحر والدوام الكامل. ابعتلي تفاصيل شغلك وهرد عليك.",
