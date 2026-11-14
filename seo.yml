@@ -1,0 +1,20 @@
+# بيعيد توليد المحتوى الثابت والسيو تلقائيًا كل ما data/site.js يتغير (من لوحة التحكم مثلًا)
+name: seo
+on:
+  push:
+    paths: ['data/site.js', 'tools/seo.mjs', 'tools/seo.config.json']
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: node tools/seo.mjs
+      - run: |
+          git config user.name "seo-bot"
+          git config user.email "seo-bot@users.noreply.github.com"
+          git add -A index.html works.html sitemap.xml robots.txt work data/slugs.js
+          git diff --cached --quiet || (git commit -m "seo: regenerate" && git push)
