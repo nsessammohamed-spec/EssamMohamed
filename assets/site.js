@@ -288,7 +288,7 @@
 
     const ord = ['work', 'services', 'pricing', 'about', 'proof', 'faq', 'contact'], idOf = h => { const m = /id="(\w+)"/.exec(h); return m ? ord.indexOf(m[1]) : -1; };
     sections.sort((x, y) => idOf(x) - idOf(y));
-    app.innerHTML = nav + '<main id="main">' + hero + sections.join('') + '</main>' + foot;
+    app.innerHTML = nav + '<main id="main">' + hero + marq + sections.join('') + '</main>' + foot;
     onScroll(); reveal(); life(); pkCar();
   }
 

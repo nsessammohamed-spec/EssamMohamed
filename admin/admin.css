@@ -488,3 +488,16 @@ dialog.pal .pk{display:flex;flex-direction:column;max-height:70vh}
   .kb-r{grid-column:1;grid-row:1;align-self:end;margin-bottom:8px}
   .kb-l{grid-column:1;grid-row:2;align-self:start;margin-top:8px}
 }
+
+/* ---------- آراء العملاء (تبويب العمل) ---------- */
+.rv-intro{margin:0 0 14px}
+.rvl{display:grid;gap:14px;margin-bottom:14px}
+.rvr{border:1px solid var(--line2);background:var(--s2);border-radius:var(--r-sm);padding:14px 14px 16px;display:grid;gap:12px}
+.rvr-h{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.rvr-b{display:inline-flex;gap:6px;flex-wrap:wrap}
+.rvp{border:1px solid var(--acc-ring);background:var(--acc-soft);border-radius:var(--r-sm);padding:14px;margin-bottom:14px;display:grid;gap:10px}
+.rvp>b{display:flex;align-items:center;gap:8px;color:var(--acc2)}
+.rvp-i{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;background:var(--s1);border:1px solid var(--line);border-radius:10px;padding:12px}
+.rvp-i p{margin:6px 0 0;color:var(--ink2);font-size:14px;line-height:1.7;white-space:pre-line}
+.rvp-s{color:var(--acc);letter-spacing:1px}
+@media(max-width:640px){.rvp-i{flex-direction:column}}

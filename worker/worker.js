@@ -96,6 +96,46 @@ function checkBody(kind, b) {
   } catch (e) { return false; }
 }
 
+
+/* ---------- آراء العملاء (الزوار بيبعتوا، وانت بتوافق من لوحة التحكم) ----------
+   - الرأي بيتخزن في KV (نفس الـ RL) كـ "منتظر مراجعة" لمدة 60 يوم، ومش بيظهر في الموقع غير لما توافق عليه.
+   - حماية: حقل مخفي للبوتات، حد 3 آراء/ساعة لكل جهاز، حد أقصى 300 رأي منتظر، ومنع الروابط في النص. */
+const RV_TTL = 60 * 86400, RV_IP_MAX = 3, RV_IP_WINDOW = 3600, RV_MAX_PENDING = 300;
+const clean = (v, max) => String(v == null ? '' : v).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F‎‏‪-‮]/g, '').replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim().slice(0, max);
+
+async function reviewSubmit(req, env, h) {
+  if (!env.RL) return reply(h, { error: 'misconfigured' }, 500);
+  let b; try { b = await req.json(); } catch (e) { return reply(h, { error: 'bad_request' }, 400); }
+  if (b && b.hp) return reply(h, { ok: true });                          // بوت: نتجاهله من غير ما نقوله
+  const pid = String((b && b.pid) || ''), name = clean(b && b.name, 40), text = clean(b && b.text, 600);
+  const rating = Math.max(0, Math.min(5, parseInt(b && b.rating, 10) || 0));
+  if (!/^[\w-]{1,40}$/.test(pid)) return reply(h, { error: 'bad_project' }, 400);
+  if (name.length < 2) return reply(h, { error: 'name' }, 400);
+  if (text.length < 10) return reply(h, { error: 'text' }, 400);
+  if (/https?:\/\/|www\.|\.(com|net|org|ru|xyz|top)\b/i.test(name + ' ' + text)) return reply(h, { error: 'links' }, 400);
+  const ip = req.headers.get('CF-Connecting-IP') || 'unknown', ik = 'rvip:' + ip;
+  const used = await getFails(env.RL, ik);
+  if (used.n >= RV_IP_MAX) return reply(h, { error: 'too_many' }, 429, { 'Retry-After': String(RV_IP_WINDOW) });
+  const cur = await env.RL.list({ prefix: 'rv:', limit: RV_MAX_PENDING + 1 });
+  if (cur.keys.length > RV_MAX_PENDING) return reply(h, { error: 'full' }, 503);
+  const id = Date.now().toString(36) + hex(crypto.getRandomValues(new Uint8Array(3)));
+  await env.RL.put('rv:' + id, JSON.stringify({ id, pid, name, text, rating, ts: Date.now() }), { expirationTtl: RV_TTL });
+  await env.RL.put(ik, JSON.stringify({ n: used.n + 1 }), { expirationTtl: RV_IP_WINDOW });
+  return reply(h, { ok: true });
+}
+async function reviewPending(env, h) {
+  if (!env.RL) return reply(h, { error: 'misconfigured' }, 500);
+  const l = await env.RL.list({ prefix: 'rv:', limit: 500 });
+  const items = (await Promise.all(l.keys.map(async k => { try { return JSON.parse(await env.RL.get(k.name)); } catch (e) { return null; } }))).filter(Boolean).sort((a, b) => a.ts - b.ts);
+  return reply(h, { items });
+}
+async function reviewDelete(req, env, h) {
+  let b; try { b = await req.json(); } catch (e) { return reply(h, { error: 'bad_request' }, 400); }
+  const ids = (Array.isArray(b && b.ids) ? b.ids : []).filter(x => /^[a-z0-9]{4,30}$/.test(String(x))).slice(0, 50);
+  await Promise.all(ids.map(x => env.RL.delete('rv:' + x)));
+  return reply(h, { ok: true, n: ids.length });
+}
+
 export default {
   async fetch(req, env) {
     const h = corsHeaders(env, req), url = new URL(req.url);
@@ -104,6 +144,14 @@ export default {
     if (!env.GH_TOKEN || !env.ADMIN_HASH || !env.SESSION_SECRET || !env.REPO) return reply(h, { error: 'misconfigured' }, 500);
 
     if (url.pathname === '/login' && req.method === 'POST') return login(req, env, h);
+
+    if (url.pathname === '/reviews' && req.method === 'POST') return reviewSubmit(req, env, h);      // عام: الزوار
+    if (url.pathname === '/reviews/pending' || url.pathname === '/reviews/delete') {                 // خاص: لوحة التحكم بس
+      const auth = (req.headers.get('Authorization') || '').replace(/^Bearer /, '');
+      if (!(await sessionOk(env, auth))) return reply(h, { error: 'unauthorized' }, 401);
+      if (url.pathname === '/reviews/pending' && req.method === 'GET') return reviewPending(env, h);
+      if (url.pathname === '/reviews/delete' && req.method === 'POST') return reviewDelete(req, env, h);
+    }
 
     if (url.pathname.startsWith('/gh/')) {
       const auth = (req.headers.get('Authorization') || '').replace(/^Bearer /, '');

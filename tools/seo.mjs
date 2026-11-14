@@ -294,6 +294,7 @@ visible.forEach(p => {
     '<link rel="preload" href="../../fonts/plexarabic_regular.woff" as="font" type="font/woff" crossorigin>',
     '<link rel="stylesheet" href="' + withV('../../assets/site.css', vSite) + '">',
     '<link rel="stylesheet" href="' + withV('../../assets/project.css', fileHash('assets/project.css')) + '">',
+    '<link rel="stylesheet" href="' + withV('../../assets/reviews.css', fileHash('assets/reviews.css')) + '">',
     themeScript, ld(ld1), ld2 && ld(ld2)
   ].filter(Boolean).join('\n');
 
@@ -318,6 +319,20 @@ visible.forEach(p => {
     (waDigits ? '<a class="btn ' + (ext.length ? 'ghost' : 'primary') + '" href="https://wa.me/' + E(waDigits) + '?text=' + encodeURIComponent(waMsg) + '" target="_blank" rel="noopener noreferrer">اطلب شغل زي ده ' + pjIc('arrowL') + '</a>' : '') +
     '<a class="btn ghost" href="../../works.html">كل الأعمال ' + pjIc('arrowL') + '</a></div>';
 
+  /* آراء العملاء (ثابتة في الـHTML عشان جوجل والزوار من غير JavaScript؛ النموذج بيتضاف من assets/reviews.js) */
+  const rvStar = '<svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3"/></svg>';
+  const rvStars = n => { n = Math.max(0, Math.min(5, parseInt(n, 10) || 0)); return n ? '<span class="rv-st" role="img" aria-label="' + n + ' من 5">' + [1, 2, 3, 4, 5].map(i => '<i' + (i <= n ? ' class="on"' : '') + '>' + rvStar + '</i>').join('') + '</span>' : ''; };
+  const rvList = (Array.isArray(p.reviews) ? p.reviews : []).filter(r => r && (okImg(r.img) || String(r.text || '').trim()));
+  const rvCard = r => {
+    const nm = String(r.name || '').trim() || 'عميل', tx = String(r.text || '').trim(), im = okImg(r.img);
+    const meta = '<div class="rv-m"><b dir="auto">' + E(nm) + '</b>' + rvStars(r.rating) + '</div>';
+    return im
+      ? '<figure class="rvc shot"><a class="rvc-i" href="' + E(relU(im)) + '" data-rvz aria-label="تكبير صورة الرأي"><img loading="lazy" decoding="async" src="' + E(relU(im)) + '" alt="رأي ' + E(nm) + '"></a><figcaption>' + meta + (tx ? '<p dir="auto">' + E(tx) + '</p>' : '') + '</figcaption></figure>'
+      : '<figure class="rvc"><blockquote><p dir="auto">' + E(tx) + '</p></blockquote><figcaption>' + meta + '</figcaption></figure>';
+  };
+  const reviewsHtml = '<section class="rvs" data-rv-static="' + E(String(p.id)) + '" aria-label="آراء العملاء"><div class="rvs-h"><h2>آراء العملاء</h2>' + (rvList.length ? '<span class="rvs-n">' + rvList.length + '</span>' : '') + '</div>' +
+    (rvList.length ? '<div class="rvs-l">' + rvList.map(rvCard).join('') + '</div>' : '<p class="rvs-0">لسه مفيش آراء على العمل ده. كن أول من يشاركنا رأيه.</p>') + '</section>';
+
   const body = [
     '<a class="skip" href="#main">تخطي للمحتوى</a>',
     '<header class="nav stuck" id="nav"><div class="wrap nav-in"><a class="brand" href="../../" aria-label="الرئيسية"><b>' + E((pjName || 'ع').trim().charAt(0)) + '</b><span>' + E(pjName) + '</span></a>' +
@@ -332,8 +347,10 @@ visible.forEach(p => {
       ((cat.name || tools.length || p.client || p.year) ? '<ul class="pj-meta" aria-label="تفاصيل العمل">' + (cat.name ? '<li class="c">' + E(cat.name) + '</li>' : '') + (String(p.client || '').trim() ? '<li>' + E(String(p.client).trim()) + '</li>' : '') + (/^\d{4}$/.test(String(p.year || '').trim()) ? '<li>' + E(String(p.year).trim()) + '</li>' : '') + tools.map(t => '<li>' + E(t) + '</li>').join('') + '</ul>' : '') + '</header>',
     media, gallery,
     feats.length ? '<section aria-labelledby="ft"><h2 id="ft">المميزات</h2><ul class="pj-ft">' + feats.map(f => '<li>' + pjIc('check') + '<span dir="auto">' + E(f) + '</span></li>').join('') + '</ul></section>' : '',
-    cta, '</article>', relHtml, '</div></main>',
+    cta, '</article>', reviewsHtml, relHtml, '</div></main>',
     '<footer class="f"><div class="wrap"><span>' + E(D.footer || '') + '</span><a class="up" href="../../works.html">كل الأعمال ' + pjIc('arrowL') + '</a></div></footer>',
+    '<script>window.RV_BASE="../../"</script>',
+    '<script src="' + withV('../../assets/reviews.js', fileHash('assets/reviews.js')) + '"></script>',
     '<script src="' + withV('../../assets/project.js', fileHash('assets/project.js')) + '"></script>'
   ].filter(Boolean).join('\n');
 

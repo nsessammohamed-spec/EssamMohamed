@@ -59,6 +59,13 @@
     if (!r.ok) { const e = new Error('HTTP ' + r.status); e.status = r.status; try { e.body = await r.json(); } catch (x) {} throw e; }
     return r.status === 204 ? null : r.json();
   }
+  /* مكالمات الـWorker الخاصة بآراء الزوار (مش بتعدي على GitHub) */
+  async function wk(path, opt = {}) {
+    const r = await fetch(String(window.ADMIN_API || '').replace(/\/+$/, '') + path, Object.assign({}, opt, { cache: 'no-store', headers: { Authorization: 'Bearer ' + gh.token, 'Content-Type': 'application/json' } }));
+    if (!r.ok) { const e = new Error('HTTP ' + r.status); e.status = r.status; throw e; }
+    return r.json();
+  }
+  const rvGone = new Set();   // آراء زوار اتنشرت: بنمسحها من الصندوق بعد النشر
   function explain(e) {
     if (e.status === 401) { try { sessionStorage.removeItem('sx.admin.sess'); } catch (x) {} return 'الجلسة انتهت. اعمل ريفريش للصفحة وادخل بكلمة السر تاني.'; }
     if (e.status === 429) return 'محاولات غلط كتير. استنى شوية وجرّب.';
@@ -225,7 +232,7 @@
   function previewData() {
     const c = JSON.parse(JSON.stringify(S));
     const fix = p => (p && imgs.has(p)) ? imgs.get(p).dataUrl : p;
-    c.hero.photo = fix(c.hero.photo); c.about.photos = (c.about.photos || []).map(fix); c.projects.forEach(p => { p.images = imgList(p).map(fix); p.image = p.images[0] || ''; });
+    c.hero.photo = fix(c.hero.photo); c.about.photos = (c.about.photos || []).map(fix); c.projects.forEach(p => { p.images = imgList(p).map(fix); p.image = p.images[0] || ''; }); c.projects.forEach(p => { (p.reviews || []).forEach(r => { r.img = fix(r.img); }); });
     c.projects.forEach(p => { if (p.video && vids.has(p.video)) p.video = vids.get(p.video).url; });
     return c;
   }
@@ -237,7 +244,7 @@
   addEventListener('beforeunload', e => { if (isDirty()) { e.preventDefault(); e.returnValue = ''; } });
 
   /* ---------- publish ---------- */
-  const allImages = () => [S.hero.photo, S.seo && S.seo.ogImage].concat(S.about.photos || [], ...S.projects.map(imgList)).filter(Boolean);
+  const allImages = () => [S.hero.photo, S.seo && S.seo.ogImage].concat(S.about.photos || [], ...S.projects.map(imgList), ...S.projects.map(q => (q.reviews || []).map(r => r.img))).filter(Boolean);
   const okUrl = u => !u || /^https?:\/\/\S+$/i.test(String(u).trim());
   function validate() {
     const o = [];
@@ -266,6 +273,8 @@
       const r = await put('data/site.js', b64('window.SITE=' + JSON.stringify(S, null, 1) + ';\n'), 'تحديث محتوى الموقع من لوحة التحكم', true);
       gh.sha = r.content.sha; orig = JSON.stringify(S); lastPub = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
       toast('اتحفظ على GitHub ✓'); watchBuild(r.commit.sha);
+      const sids = S.projects.flatMap(q => (q.reviews || []).map(x => x.sid)).filter(x => x && !rvGone.has(x));
+      if (sids.length) wk('/reviews/delete', { method: 'POST', body: JSON.stringify({ ids: sids }) }).then(() => sids.forEach(x => rvGone.add(x))).catch(() => {});
     } catch (e) { note(I('alert') + '<span>' + esc(explain(e)) + '</span>', 'bad'); toast('فشل النشر', true); }
     finally { busy = false; updateBar(); }
   }
@@ -339,7 +348,7 @@
     const grid = flt.vw === 'grid';
     return rows.map(([p, i], k) => {
       const im = imgList(p)[0], hid = p.visible === false, n = imgList(p).length;
-      const bd = (p.video ? '<span class="badge">فيديو</span>' : '') + (n > 1 ? '<span class="badge">' + n + ' صور</span>' : '') + (p.featured ? '<span class="badge gold">مميّز</span>' : '') + (p.tag ? '<span class="badge">' + esc(p.tag) + '</span>' : '') + (hid ? '<span class="badge">مخفي</span>' : '');
+      const bd = (p.video ? '<span class="badge">فيديو</span>' : '') + (n > 1 ? '<span class="badge">' + n + ' صور</span>' : '') + ((p.reviews || []).length ? '<span class="badge">' + p.reviews.length + ' آراء</span>' : '') + (p.featured ? '<span class="badge gold">مميّز</span>' : '') + (p.tag ? '<span class="badge">' + esc(p.tag) + '</span>' : '') + (hid ? '<span class="badge">مخفي</span>' : '');
       const btn = (a, ic, lb, dis, bad) => '<button class="ib' + (bad ? ' bad' : '') + '" data-act="' + a + '" data-i="' + i + '" aria-label="' + lb + '" title="' + lb + '" ' + (dis ? 'disabled' : '') + '>' + I(ic) + '</button>';
       const acts = '<div class="acts">' + btn('up', 'up', 'فوق', k === 0) + btn('down', 'down', 'تحت', k === rows.length - 1) + btn('vis', hid ? 'eyeoff' : 'eye', 'إظهار/إخفاء') + btn('editWork', 'edit', 'تعديل') + btn('dup', 'copy', 'نسخ') + btn('delWork', 'trash', 'حذف', false, true) + '</div>';
       const thumbH = im ? '<img src="' + esc(imgSrc(im)) + '" alt="" onerror="this.remove()">' : I(catIcon(p.category));
@@ -358,7 +367,7 @@
     const p = isNew ? { id: uid('p'), category: flt.cat !== 'all' ? flt.cat : S.categories[0].id, title: '', desc: '', link: '', image: '', images: [], tag: '', client: '', year: '', visible: true, featured: false } : Object.assign({}, S.projects[i]);
     let gal = imgList(p).slice();
     const d = $('#dlg');
-    d.innerHTML = '<form method="dialog" id="wf"><div class="dh"><h2>' + (isNew ? 'إضافة عمل جديد' : 'تعديل العمل') + '</h2><button type="button" class="ib" id="x" aria-label="إغلاق">' + I('x') + '</button></div><div class="tabs" role="tablist"><button type="button" class="tab on" data-t="a">' + I('edit') + ' الأساسيات</button><button type="button" class="tab" data-t="b">' + I('image') + ' الصور والفيديو</button><button type="button" class="tab" data-t="c">' + I('phone') + ' تفاصيل التطبيق</button><button type="button" class="tab" data-t="d">' + I('eye') + ' الظهور</button></div><div class="db">' +
+    d.innerHTML = '<form method="dialog" id="wf"><div class="dh"><h2>' + (isNew ? 'إضافة عمل جديد' : 'تعديل العمل') + '</h2><button type="button" class="ib" id="x" aria-label="إغلاق">' + I('x') + '</button></div><div class="tabs" role="tablist"><button type="button" class="tab on" data-t="a">' + I('edit') + ' الأساسيات</button><button type="button" class="tab" data-t="b">' + I('image') + ' الصور والفيديو</button><button type="button" class="tab" data-t="c">' + I('phone') + ' تفاصيل التطبيق</button><button type="button" class="tab" data-t="d">' + I('eye') + ' الظهور</button><button type="button" class="tab" data-t="e">' + I('star') + ' آراء العملاء</button></div><div class="db">' +
       '<div class="tp on" data-p="a"><label>العنوان<input id="w_t" required dir="auto" value="' + esc(p.title) + '"></label>' +
       '<div class="g2"><label>القسم<select id="w_c">' + S.categories.map(c => '<option value="' + esc(c.id) + '"' + (c.id === p.category ? ' selected' : '') + '>' + esc(c.name) + '</option>').join('') + '</select></label><label>وسم قصير (اختياري)<input id="w_g" placeholder="مثلًا: منيو، Android" value="' + esc(p.tag) + '"></label></div>' +
       '<div class="g2"><label>العميل أو الجهة (اختياري)<input id="w_cl" dir="auto" placeholder="مثلًا: مطعم بيتزا لبنان" value="' + esc(p.client || '') + '"></label><label>السنة (اختياري)<input id="w_yr" dir="ltr" inputmode="numeric" maxlength="4" placeholder="2026" value="' + esc(p.year || '') + '"></label></div>' +
@@ -370,12 +379,51 @@
       '<label>روابط إضافية <small class="h" style="font-weight:400">— سطر لكل رابط: اسم الزر | الرابط (بتظهر في عرض التطبيقات)</small><textarea id="w_lk" rows="3" dir="ltr" placeholder="Google Play | https://play.google.com/…">' + esc((p.links || []).map(x => (x.label || '') + ' | ' + (x.url || '')).join('\n')) + '</textarea></label>' +
       '</div><div class="tp" data-p="b"><label>فيديو عن العمل <small class="h" style="font-weight:400">— رابط يوتيوب أو فيميو أو mp4، أو ارفع ملف (لحد 6MB)</small></label><div class="gal" id="w_vid"><div class="ga"><button type="button" class="btn sm" data-vpick>' + I('upload') + ' رفع فيديو</button><button type="button" class="btn sm ghost danger" data-vclear ' + (p.video ? '' : 'hidden') + '>' + I('trash') + ' إزالة</button><input type="text" dir="ltr" id="w_vu" placeholder="https://youtube.com/…" value="' + (/^https?:/i.test(p.video || '') ? esc(p.video) : '') + '"><small class="h" id="w_vn">' + (p.video && !/^https?:/i.test(p.video) ? 'فيديو مرفوع: ' + esc(p.video) : '') + '</small></div><input type="file" accept="video/mp4,video/webm" hidden></div>' +
       galleryField('w_gal') +
-      '</div><div class="tp" data-p="d"><label class="sw"><input type="checkbox" id="w_v"' + (p.visible !== false ? ' checked' : '') + '>ظاهر في الموقع</label><label class="sw"><input type="checkbox" id="w_f"' + (p.featured ? ' checked' : '') + '>عمل مميّز (كارت أكبر)</label></div></div>' +
+      '</div><div class="tp" data-p="d"><label class="sw"><input type="checkbox" id="w_v"' + (p.visible !== false ? ' checked' : '') + '>ظاهر في الموقع</label><label class="sw"><input type="checkbox" id="w_f"' + (p.featured ? ' checked' : '') + '>عمل مميّز (كارت أكبر)</label></div><div class="tp" data-p="e"><div id="rv_ed"></div></div></div>' +
       '<div class="df"><button class="btn primary" type="submit">' + I('check') + ' حفظ</button><button class="btn ghost" type="button" id="cx">إلغاء</button></div></form>';
     d.onclose = null;
     const tab = k => { $$('.tab', d).forEach(x => x.classList.toggle('on', x.dataset.t === k)); $$('.tp', d).forEach(x => x.classList.toggle('on', x.dataset.p === k)); };
     $$('.tab', d).forEach(x => x.onclick = () => tab(x.dataset.t)); $('#w_t', d).addEventListener('invalid', () => tab('a'));
     bindGallery($('#w_gal', d), gal, 1600, v => { p.images = v; });
+    /* ----- آراء العملاء ----- */
+    let rev = (Array.isArray(p.reviews) ? p.reviews : []).map(x => Object.assign({}, x));
+    const rvBox = $('#rv_ed', d);
+    const rvRow = (r, k) => '<div class="rvr" data-k="' + k + '"><div class="rvr-h"><b>رأي ' + (k + 1) + (r.sid ? ' <span class="badge">من زائر</span>' : '') + '</b><span class="rvr-b">' +
+      '<button type="button" class="ib" data-rm="-1" aria-label="فوق" ' + (k === 0 ? 'disabled' : '') + '>' + I('up') + '</button><button type="button" class="ib" data-rm="1" aria-label="تحت" ' + (k === rev.length - 1 ? 'disabled' : '') + '>' + I('down') + '</button>' +
+      '<button type="button" class="ib bad" data-rd aria-label="احذف الرأي">' + I('trash') + '</button></span></div>' +
+      '<div class="g2"><label>اسم العميل<input data-f="name" dir="auto" maxlength="40" value="' + esc(r.name || '') + '"></label><label>التقييم<select data-f="rating">' + [['0', 'بدون تقييم'], ['5', '★★★★★'], ['4', '★★★★'], ['3', '★★★'], ['2', '★★'], ['1', '★']].map(o => '<option value="' + o[0] + '"' + (String(r.rating || 0) === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select></label></div>' +
+      '<label>نص الرأي <small class="h" style="font-weight:400">— اختياري لو رافع سكرين</small><textarea data-f="text" rows="3" dir="auto" maxlength="600">' + esc(r.text || '') + '</textarea></label>' +
+      imageField('rvi' + k, 'سكرين شوت للرأي (اختياري)', r.img || '') + '</div>';
+    const rvPaint = () => {
+      rvBox.innerHTML = '<p class="h rv-intro">ضيف آراء العملاء على العمل ده: سكرين شوت من واتساب أو فيسبوك، أو رأي مكتوب. هتظهر للزوار في نافذة العمل وفي صفحته.</p>' +
+        '<div id="rv_pend"></div><div class="rvl">' + (rev.length ? rev.map(rvRow).join('') : '<div class="gempty">لسه مفيش آراء على العمل ده.</div>') + '</div>' +
+        '<button type="button" class="btn sm" data-radd>' + I('plus') + ' إضافة رأي</button>';
+      rev.forEach((r, k) => bindImageField($('#rvi' + k, rvBox), 1400, v => { rev[k].img = v; }));
+      rvPend();
+    };
+    let rvItems = null;
+    const rvPend = () => {
+      const box = $('#rv_pend', rvBox); if (!box || isNew) return;
+      const draw = () => {
+        const L = (rvItems || []).filter(x => x.pid === p.id && !rev.some(y => y.sid === x.id));
+        box.innerHTML = L.length ? '<div class="rvp"><b>' + I('info') + ' آراء جديدة من الزوار (' + L.length + ') — مستنية موافقتك</b>' + L.map(x => '<div class="rvp-i" data-id="' + esc(x.id) + '"><div><b dir="auto">' + esc(x.name) + '</b>' + (x.rating ? ' <span class="rvp-s">' + '★'.repeat(x.rating) + '</span>' : '') + '<p dir="auto">' + esc(x.text) + '</p></div><span class="rvr-b"><button type="button" class="btn sm primary" data-rok>' + I('check') + ' قبول</button><button type="button" class="btn sm ghost danger" data-rno>' + I('trash') + ' رفض</button></span></div>').join('') + '</div>' : '';
+      };
+      if (rvItems) { draw(); return; }
+      box.innerHTML = '<p class="h">جاري تحميل آراء الزوار…</p>';
+      wk('/reviews/pending').then(r => { rvItems = r.items || []; draw(); }).catch(() => { box.innerHTML = '<p class="h">مقدرتش أحمّل آراء الزوار. لو لسه ما حدّثتش الـWorker، آراء الزوار مش هتشتغل (باقي الميزات شغالة).</p>'; });
+    };
+    rvBox.addEventListener('input', e => { const f = e.target.dataset && e.target.dataset.f, row = e.target.closest('.rvr'); if (f && row) rev[+row.dataset.k][f] = f === 'rating' ? +e.target.value : e.target.value; });
+    rvBox.addEventListener('click', e => {
+      const row = e.target.closest('.rvr'), k = row ? +row.dataset.k : -1;
+      if (e.target.closest('[data-radd]')) { rev.push({ id: uid('r'), name: '', rating: 0, text: '', img: '' }); rvPaint(); const t = $$('.rvr', rvBox).pop(); if (t) t.scrollIntoView({ block: 'center' }); return; }
+      const m = e.target.closest('[data-rm]'); if (m && k > -1) { moveIdx(rev, k, k + +m.dataset.rm); rvPaint(); return; }
+      if (e.target.closest('[data-rd]') && k > -1) { rev.splice(k, 1); rvPaint(); return; }
+      const it = e.target.closest('.rvp-i'); if (!it) return;
+      const x = (rvItems || []).find(y => y.id === it.dataset.id); if (!x) return;
+      if (e.target.closest('[data-rok]')) { rev.push({ id: uid('r'), name: x.name, rating: x.rating || 0, text: x.text, img: '', sid: x.id, date: new Date(x.ts).toISOString().slice(0, 10) }); rvPaint(); toast('اتضاف للآراء ✓ (احفظ العمل وانشر)'); }
+      else if (e.target.closest('[data-rno]')) { wk('/reviews/delete', { method: 'POST', body: JSON.stringify({ ids: [x.id] }) }).then(() => { rvItems = rvItems.filter(y => y.id !== x.id); rvPend(); toast('اتمسح ✓'); }).catch(() => toast('معرفتش أمسحه', true)); }
+    });
+    rvPaint();
     let vurl = p.video || '';
     const vb = $('#w_vid', d), vfi = $('input[type=file]', vb), vn = $('#w_vn', d), vc = $('[data-vclear]', vb);
     const setV = (v, t) => { vurl = v || ''; vc.hidden = !vurl; vn.textContent = t || ''; };
@@ -393,7 +441,7 @@
     $('#wf', d).onsubmit = e => {
       e.preventDefault();
       p.images = gal.slice(); p.image = p.images[0] || '';
-      Object.assign(p, { title: $('#w_t').value.trim(), category: $('#w_c').value, tag: $('#w_g').value.trim(), client: $('#w_cl').value.trim(), year: $('#w_yr').value.replace(/[^0-9]/g, '').slice(0, 4), link: $('#w_l').value.trim(), desc: $('#w_d').value.trim(), visible: $('#w_v').checked, featured: $('#w_f').checked, layout: $('#w_app').checked ? 'app' : '', status: $('#w_st').value.trim(), tools: $('#w_tl').value.split(/[,،]/).map(x => x.trim()).filter(Boolean), features: $('#w_ft').value.split('\n').map(x => x.trim()).filter(Boolean), links: parseLinks($('#w_lk').value), video: vurl });
+      Object.assign(p, { title: $('#w_t').value.trim(), category: $('#w_c').value, tag: $('#w_g').value.trim(), client: $('#w_cl').value.trim(), year: $('#w_yr').value.replace(/[^0-9]/g, '').slice(0, 4), link: $('#w_l').value.trim(), desc: $('#w_d').value.trim(), visible: $('#w_v').checked, featured: $('#w_f').checked, layout: $('#w_app').checked ? 'app' : '', status: $('#w_st').value.trim(), tools: $('#w_tl').value.split(/[,،]/).map(x => x.trim()).filter(Boolean), features: $('#w_ft').value.split('\n').map(x => x.trim()).filter(Boolean), links: parseLinks($('#w_lk').value), video: vurl, reviews: rev.filter(r => r.img || String(r.text || '').trim()).map(r => ({ id: r.id || uid('r'), name: String(r.name || '').trim(), rating: +r.rating || 0, text: String(r.text || '').trim(), img: r.img || '', ...(r.sid ? { sid: r.sid } : {}), ...(r.date ? { date: r.date } : {}) })) });
       if (isNew) S.projects.unshift(p); else S.projects[i] = p;
       d.close(); touch(); if (view === 'works') { $('#plist').innerHTML = listWorks(); } else go('works');
       toast(isNew ? 'اتضاف ✓ (لسه محتاج نشر)' : 'اتعدّل ✓ (لسه محتاج نشر)');

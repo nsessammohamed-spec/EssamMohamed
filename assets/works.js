@@ -204,7 +204,7 @@
       info: (p.tag ? '<span class="tg">' + E(p.tag) + '</span>' : '') + '<h2 dir="auto">' + E(p.title) + '</h2>' + metaOf(p) + (p.status ? '<span class="pj-st">' + E(p.status) + '</span>' : '') + (p.desc ? '<p>' + E(p.desc) + '</p>' : '') + (app ? chips(p) : '') + (app && ft.length ? '<ul class="ft">' + ft.map(f => '<li>' + ic('check') + '<span dir="auto">' + E(f) + '</span></li>').join('') + '</ul>' : '') + (app && vd ? '<button type="button" class="btn ghost vw-vt" data-vvid>' + ic('play') + ' ' + E(vwVid ? T('wkSeeShots') : T('wkWatchApp')) + '</button>' : '') + go + pg + (function () {
         const o = []; for (let k = 1; k < n && o.length < 4; k++) o.push(vwList[(i + k) % n]);
         return o.length ? '<div class="vw-rel"><span>' + E(T('wkMore')) + '</span><div>' + o.map(x => { const im = imgsOf(x)[0]; return '<button type="button" data-vrel="' + E(x.id) + '" aria-label="' + E(x.title) + '" title="' + E(x.title) + '">' + (im ? '<img loading="lazy" decoding="async" src="' + E(im) + '" alt="">' : ic(catOf(x.category).icon)) + '</button>'; }).join('') + '</div></div>' : '';
-      })()
+      })() + (window.RV ? RV.html(p) : '')
     };
   }
   function vwOpen(id, k) {
@@ -316,13 +316,14 @@
   });
   d.addEventListener('keydown', e => {
     if (!vw) return;
+    const tg = e.target; if (tg && /^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName) && e.key !== 'Escape' && e.key !== 'Tab') return;
     if (e.key === 'Escape') vwClose();
     else if (e.key === 'ArrowLeft') vwImg(1);
     else if (e.key === 'ArrowRight') vwImg(-1);
     else if (e.key === 'ArrowDown' || e.key === 'PageDown') { e.preventDefault(); vwStep(1); }
     else if (e.key === 'ArrowUp' || e.key === 'PageUp') { e.preventDefault(); vwStep(-1); }
     else if (e.key === 'Tab') {
-      const f = [].slice.call(vw.querySelectorAll('button,a[href]')).filter(x => !x.disabled && x.offsetParent !== null);
+      const f = [].slice.call(vw.querySelectorAll('button,a[href],summary,input:not(.rvf-hp):not([type=radio]),textarea')).filter(x => !x.disabled && x.offsetParent !== null);
       if (!f.length) return;
       const a = d.activeElement;
       if (!vw.contains(a) || (e.shiftKey && a === f[0])) { e.preventDefault(); f[f.length - 1].focus(); }
