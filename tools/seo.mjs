@@ -31,6 +31,9 @@ const safeUrl = u => /^(https?:\/\/|mailto:|tel:|#)/i.test(u || '') ? u : '#';
 const title = D.meta?.title || D.hero?.name;
 const desc = D.meta?.description || D.hero?.sub || '';
 const ogImg = abs(Q.ogImage || cfg.OG_IMAGE || D.hero?.photo);
+const NAME_EN = Q.nameEn || cfg.NAME_EN || '';
+const ALT = [...new Set([NAME_EN, ...(cfg.ALT_NAMES || [])].filter(Boolean))];
+const JOB_EN = cfg.JOB_TITLE_EN || '';
 const JOB = Q.jobTitle || cfg.JOB_TITLE, CITY = Q.city || cfg.CITY, COUNTRY = Q.country || cfg.COUNTRY;
 (D.projects || []).forEach((p, k) => { if (p && !p.id) p.id = 'x' + k; });   // نفس منطق site.js
 const visible = (D.projects || []).filter(p => p && p.visible !== false);
@@ -54,7 +57,7 @@ const catName = id => (D.categories || []).find(c => c.id === id)?.name || '';
 const sameAs = (D.contact?.socials || []).map(s => s.url).filter(u => /^https:/.test(u));
 const person = {
   '@context': 'https://schema.org', '@type': 'Person', ...(site && { '@id': site + '#person' }),
-  name: D.hero?.name, description: desc, jobTitle: JOB,
+  name: D.hero?.name, ...(ALT.length && { alternateName: ALT }), description: desc, jobTitle: JOB,
   ...(site && { url: site }), ...(abs(D.hero?.photo) && { image: abs(D.hero.photo) }),
   ...(D.contact?.email && { email: D.contact.email }),
   ...(CITY && { address: { '@type': 'PostalAddress', addressLocality: CITY, addressCountry: COUNTRY } }),
@@ -76,7 +79,7 @@ const offerPrice = txt => {
 const biz = pkgs.length ? {
   '@context': 'https://schema.org', '@type': 'ProfessionalService',
   ...(site && { '@id': site + '#service', url: site }),
-  name: D.hero?.name, description: desc,
+  name: D.hero?.name, ...(ALT.length && { alternateName: ALT }), description: desc,
   ...(abs(D.hero?.photo) && { image: abs(D.hero.photo) }),
   ...(waDigits && { telephone: '+' + waDigits }),
   ...(D.contact?.email && { email: D.contact.email }),
@@ -92,7 +95,7 @@ const biz = pkgs.length ? {
     }))
   }
 } : null;
-const website = site ? { '@context': 'https://schema.org', '@type': 'WebSite', name: D.hero?.name, url: site, inLanguage: 'ar' } : null;
+const website = site ? { '@context': 'https://schema.org', '@type': 'WebSite', name: D.hero?.name, ...(ALT.length && { alternateName: ALT }), url: site, inLanguage: 'ar' } : null;
 const ogDimsMeta = (!Q.ogImage && cfg.OG_IMAGE_WIDTH && cfg.OG_IMAGE_HEIGHT)
   ? ['<meta property="og:image:width" content="' + cfg.OG_IMAGE_WIDTH + '">', '<meta property="og:image:height" content="' + cfg.OG_IMAGE_HEIGHT + '">'] : [];
 const ld = o => '<script type="application/ld+json">' + JSON.stringify(o).replace(/</g, '\\u003c') + '</script>';
@@ -123,7 +126,7 @@ const head = [
 /* ---------- 2) المحتوى الثابت ---------- */
 const body = [
   '<main class="seo-static" style="max-width:760px;margin:0 auto;padding:48px 20px;line-height:1.9">',
-  '<header><p>' + E(D.hero?.eyebrow) + '</p><h1>' + E(D.hero?.name) + '</h1><p>' + E(D.hero?.sub) + '</p></header>',
+  '<header><p>' + E(D.hero?.eyebrow) + '</p><h1>' + E(D.hero?.name) + '</h1>' + (NAME_EN ? '<p lang="en" dir="ltr">' + E(NAME_EN) + (JOB_EN ? ' — ' + E(JOB_EN) : '') + '</p>' : '') + '<p>' + E(D.hero?.sub) + '</p></header>',
   D.about?.text && '<section><h2>' + E(D.about.title || 'نبذة عني') + '</h2><p>' + E(D.about.text) + '</p></section>',
   (D.skills || []).length && '<section><h2>الأدوات والمهارات</h2><ul>' + D.skills.map(s => '<li>' + E(s) + '</li>').join('') + '</ul></section>',
   (D.categories || []).length && '<section><h2>المجالات</h2><ul>' + D.categories.map(c => '<li><strong>' + E(c.name) + '</strong>: ' + E(c.desc) + '</li>').join('') + '</ul></section>',
@@ -331,7 +334,6 @@ visible.forEach(p => {
     feats.length ? '<section aria-labelledby="ft"><h2 id="ft">المميزات</h2><ul class="pj-ft">' + feats.map(f => '<li>' + pjIc('check') + '<span dir="auto">' + E(f) + '</span></li>').join('') + '</ul></section>' : '',
     cta, '</article>', relHtml, '</div></main>',
     '<footer class="f"><div class="wrap"><span>' + E(D.footer || '') + '</span><a class="up" href="../../works.html">كل الأعمال ' + pjIc('arrowL') + '</a></div></footer>',
-    (D.protect === false ? '' : '<script src="' + withV('../../assets/protect.js', fileHash('assets/protect.js')) + '"></script>'),
     '<script src="' + withV('../../assets/project.js', fileHash('assets/project.js')) + '"></script>'
   ].filter(Boolean).join('\n');
 
